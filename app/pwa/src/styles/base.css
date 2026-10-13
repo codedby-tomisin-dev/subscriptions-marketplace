@@ -1,0 +1,105 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  background: var(--surface-page);
+  color: var(--text-body);
+  font: var(--type-body);
+  letter-spacing: var(--tracking-body);
+}
+
+a {
+  color: var(--text-link);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+a:hover {
+  color: var(--cocoa-700);
+}
+
+::selection {
+  background: var(--blush-200);
+  color: var(--cocoa-900);
+}
+
+:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+
+@keyframes bb-fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Page-level layout & type helpers shared across features.
+   Override individual properties with inline styles, not competing classes. */
+
+.bb-container {
+  max-width: var(--page-max);
+  margin-inline: auto;
+  padding-inline: 40px;
+}
+
+.bb-container-narrow {
+  max-width: 1080px;
+}
+
+/* `backwards` (not `both`) so hover transforms still apply once the reveal ends. */
+.bb-rise {
+  animation: bb-fade-up 420ms var(--ease-out) backwards;
+}
+
+.bb-display {
+  margin: 0;
+  font: var(--weight-bold) clamp(44px, min(6.4vw, 9vh), 80px)/var(--leading-tight) var(--font-display);
+  letter-spacing: var(--tracking-display);
+  color: var(--text-strong);
+  text-wrap: balance;
+}
+
+.bb-heading {
+  margin: 0;
+  font: var(--type-h1);
+  letter-spacing: var(--tracking-heading);
+  color: var(--text-strong);
+  text-wrap: balance;
+}
+
+.bb-eyebrow {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--text-accent);
+}
+
+.bb-lede {
+  margin: 0;
+  font: var(--type-body-lg);
+  color: var(--text-muted);
+  text-wrap: pretty;
+}
+
+@media (max-width: 640px) {
+  .bb-container {
+    padding-inline: 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bb-rise {
+    animation: none;
+  }
+}

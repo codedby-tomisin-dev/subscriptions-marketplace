@@ -1,0 +1,1 @@
+export { AnimatedHeadline } from "./AnimatedHeadline";

@@ -1,0 +1,170 @@
+.kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 22px;
+  font-size: 14px;
+}
+
+.kpiNote {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-subtle);
+}
+
+.change {
+  font-weight: 600;
+  color: var(--text-body);
+}
+
+.change[data-good="true"] {
+  color: var(--success-fg);
+}
+
+.change[data-good="false"] {
+  color: var(--danger-fg);
+}
+
+.count {
+  font-size: 13px;
+  color: var(--text-subtle);
+}
+
+.attention {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.attentionRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border-radius: var(--radius-md);
+  background: var(--cream-50);
+  font-size: 14px;
+}
+
+.attentionText {
+  flex: 1;
+  min-width: 0;
+}
+
+.attentionIcon {
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+}
+
+.attentionIcon[data-tone="danger"] {
+  background: var(--danger-bg);
+  color: var(--danger-fg);
+}
+
+.attentionIcon[data-tone="warning"] {
+  background: var(--warning-bg);
+  color: var(--warning-fg);
+}
+
+.week {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  align-items: end;
+  height: 180px;
+}
+
+.dayColumn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  height: 100%;
+}
+
+.dayTotal {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.dayBar {
+  position: relative;
+  width: 100%;
+  max-width: 44px;
+  border-radius: 4px 4px 0 0;
+  background: var(--cream-200);
+  overflow: hidden;
+}
+
+.dayShipped {
+  position: absolute;
+  inset: auto 0 0;
+  background: var(--blush-500);
+  /* 2px surface gap between shipped and still-to-go. */
+  box-shadow: 0 -2px 0 var(--surface-raised);
+}
+
+.dayLabel {
+  font-size: 12px;
+  color: var(--text-subtle);
+  white-space: nowrap;
+}
+
+.mrrRows {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.mrrRow {
+  display: grid;
+  grid-template-columns: 130px minmax(0, 1fr) 64px;
+  gap: 16px;
+  align-items: center;
+  font-size: 14px;
+}
+
+.mrrValue {
+  text-align: right;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.split {
+  display: flex;
+  gap: 2px;
+  height: 14px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.splitStats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.splitStat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 14px;
+}
+
+.insight {
+  margin: 20px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-subtle);
+  font-size: 14px;
+  color: var(--text-muted);
+}

@@ -1,0 +1,94 @@
+.page {
+  padding-top: clamp(24px, 5vh, 48px);
+  padding-bottom: 40px;
+}
+
+.intro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  max-width: 860px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.ctas {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.rating {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 15px;
+  color: var(--text-muted);
+}
+
+.rating b {
+  color: var(--text-strong);
+  font-weight: 600;
+}
+
+.boxRow {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 16px;
+  align-items: start;
+  margin-top: clamp(32px, 6.5vh, 60px);
+}
+
+.reassurances {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px 28px;
+  margin: 32px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.reassurances li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.reassurances svg {
+  color: var(--blush-600);
+}
+
+.partners {
+  margin-top: 24px;
+}
+
+@media (min-width: 761px) {
+  .boxRow {
+    margin-inline: -20px;
+  }
+}
+
+/* Phones: the row becomes a horizontal swipe carousel. */
+@media (max-width: 760px) {
+  .boxRow {
+    display: flex;
+    gap: 14px;
+    margin-inline: -20px;
+    padding: 0 20px 8px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+  }
+
+  .boxRow > * {
+    flex: 0 0 42%;
+    scroll-snap-align: start;
+    margin-top: 0 !important;
+  }
+}

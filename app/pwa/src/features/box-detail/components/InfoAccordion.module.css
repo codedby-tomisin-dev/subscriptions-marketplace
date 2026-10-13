@@ -1,0 +1,33 @@
+.accordionItem {
+  border-top: 1px solid var(--border-subtle);
+}
+
+.accordionButton {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 0;
+  border: 0;
+  background: none;
+  font: 600 16px var(--font-sans);
+  color: var(--text-strong);
+  cursor: pointer;
+}
+
+.accordionPanel {
+  padding: 0 0 18px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-muted);
+  animation: reveal 240ms var(--ease-out);
+}
+
+@keyframes reveal {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .accordionPanel { animation: none; }
+}

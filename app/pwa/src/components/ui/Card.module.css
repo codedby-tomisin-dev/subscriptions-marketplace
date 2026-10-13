@@ -1,0 +1,8 @@
+/* Padding and radius are set by the caller's class to avoid cross-module ordering conflicts. */
+.card { color: var(--text-body); }
+
+.raised { box-shadow: var(--shadow-sm); }
+
+.white { background: var(--surface-card); }
+.blush { background: var(--surface-blush); }
+.ink { background: var(--surface-inverse); color: var(--text-inverse); }

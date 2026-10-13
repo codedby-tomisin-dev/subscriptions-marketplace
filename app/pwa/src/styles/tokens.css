@@ -1,0 +1,203 @@
+/* Bonbon design tokens — ported from the Bonbon design system (claude.ai/design). */
+
+/* Colors */
+:root {
+  /* Cream — warm paper neutrals */
+  --cream-0: #FFFDFA;
+  --cream-50: #FBF6F0;
+  --cream-100: #F5ECE1;
+  --cream-200: #EADBC8;
+  --cream-300: #D9C4AB;
+  /* Cocoa — warm ink */
+  --cocoa-400: #A8968A;
+  --cocoa-500: #8C7B70;
+  --cocoa-600: #6B5B51;
+  --cocoa-700: #4A3C34;
+  --cocoa-800: #2F241E;
+  --cocoa-900: #1F1713;
+  /* Blush — signature */
+  --blush-50: #FDF1EF;
+  --blush-100: #FADFDA;
+  --blush-200: #F5C4BC;
+  --blush-300: #EFA295;
+  --blush-400: #EC8A78;
+  --blush-500: #E8735F;
+  --blush-600: #C24E3A;
+  --blush-700: #9B3A2A;
+  /* Apricot — sunshine accent */
+  --apricot-100: #FFEFD2;
+  --apricot-300: #FFD48A;
+  --apricot-500: #F5AE3D;
+  --apricot-700: #8F5A0B;
+  /* Sage — calm, success */
+  --sage-100: #E6EFE1;
+  --sage-300: #BCD3B3;
+  --sage-500: #7FA676;
+  --sage-700: #3F6B3C;
+  /* Plum — premium depth */
+  --plum-100: #F1E2EA;
+  --plum-300: #C99AB2;
+  --plum-500: #8A4468;
+  --plum-700: #5A2442;
+  /* Lilac — soft playful */
+  --lilac-100: #ECE7F6;
+  --lilac-300: #C9BCE6;
+
+  /* Semantic — text */
+  --text-strong: var(--cocoa-900);
+  --text-body: var(--cocoa-800);
+  --text-muted: var(--cocoa-600);
+  --text-subtle: var(--cocoa-500);
+  --text-inverse: var(--cream-0);
+  --text-accent: var(--blush-600);
+  --text-link: var(--cocoa-900);
+  /* Semantic — surfaces */
+  --surface-page: #FFFFFF;
+  --surface-raised: var(--cream-0);
+  --surface-sunken: var(--cream-100);
+  --surface-card: var(--cream-0);
+  --surface-inverse: var(--cocoa-900);
+  --surface-blush: var(--blush-100);
+  --surface-apricot: var(--apricot-100);
+  --surface-sage: var(--sage-100);
+  --surface-plum: var(--plum-100);
+  --surface-overlay: rgba(31, 23, 19, .38);
+  /* Semantic — borders */
+  --border-subtle: rgba(47, 36, 30, .08);
+  --border-default: rgba(47, 36, 30, .14);
+  --border-strong: rgba(47, 36, 30, .28);
+  --border-focus: var(--blush-500);
+  /* Semantic — actions */
+  --action-primary: var(--cocoa-900);
+  --action-primary-hover: var(--cocoa-700);
+  --action-accent: var(--blush-600);
+  --action-accent-hover: var(--blush-700);
+  --action-secondary: var(--cream-0);
+  --action-secondary-hover: var(--cream-100);
+  /* Semantic — feedback */
+  --success-fg: var(--sage-700);
+  --success-bg: var(--sage-100);
+  --warning-fg: var(--apricot-700);
+  --warning-bg: var(--apricot-100);
+  --danger-fg: #A8321F;
+  --danger-bg: #FBE3DE;
+  --info-fg: #3E5A78;
+  --info-bg: #E3EBF3;
+}
+
+/* Typography — font families are loaded by next/font in app/layout.tsx */
+:root {
+  --font-display: var(--font-funnel-display), "Figtree", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-figtree), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: var(--font-dm-mono), ui-monospace, "SF Mono", Menlo, monospace;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+  --weight-black: 800;
+
+  --size-display-xl: 88px;
+  --size-display-lg: 64px;
+  --size-h1: 48px;
+  --size-h2: 36px;
+  --size-h3: 26px;
+  --size-h4: 20px;
+  --size-body-lg: 18px;
+  --size-body: 16px;
+  --size-small: 14px;
+  --size-caption: 12px;
+  --size-eyebrow: 12px;
+
+  --leading-tight: 1.02;
+  --leading-snug: 1.15;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.62;
+
+  --tracking-display: -0.035em;
+  --tracking-heading: -0.02em;
+  --tracking-body: -0.005em;
+  --tracking-eyebrow: 0.14em;
+
+  --type-display: var(--weight-bold) var(--size-display-lg)/var(--leading-tight) var(--font-display);
+  --type-h1: var(--weight-bold) var(--size-h1)/var(--leading-snug) var(--font-display);
+  --type-h2: var(--weight-semibold) var(--size-h2)/var(--leading-snug) var(--font-display);
+  --type-h3: var(--weight-semibold) var(--size-h3)/1.2 var(--font-display);
+  --type-h4: var(--weight-semibold) var(--size-h4)/1.3 var(--font-sans);
+  --type-body-lg: var(--weight-regular) var(--size-body-lg)/var(--leading-relaxed) var(--font-sans);
+  --type-body: var(--weight-regular) var(--size-body)/var(--leading-normal) var(--font-sans);
+  --type-small: var(--weight-regular) var(--size-small)/var(--leading-normal) var(--font-sans);
+  --type-caption: var(--weight-medium) var(--size-caption)/1.4 var(--font-sans);
+  --type-label: var(--weight-semibold) var(--size-small)/1.3 var(--font-sans);
+}
+
+/* Spacing & layout */
+:root {
+  --space-0: 0;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 32px;
+  --space-8: 40px;
+  --space-9: 48px;
+  --space-10: 64px;
+  --space-11: 80px;
+  --space-12: 120px;
+  --space-13: 160px;
+
+  --gutter: 24px;
+  --page-max: 1280px;
+  --content-max: 720px;
+  --nav-height: 68px;
+
+  --control-sm: 36px;
+  --control-md: 44px;
+  --control-lg: 56px;
+}
+
+/* Radii */
+:root {
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
+  --radius-2xl: 44px;
+  --radius-pill: 999px;
+  --radius-control: var(--radius-pill);
+  --radius-card: var(--radius-lg);
+  --radius-media: var(--radius-xl);
+  --radius-field: 14px;
+}
+
+/* Shadows — warm, low, diffuse; cocoa-tinted, never grey */
+:root {
+  --shadow-xs: 0 1px 2px rgba(74, 44, 30, .06);
+  --shadow-sm: 0 1px 2px rgba(74, 44, 30, .05), 0 4px 12px -2px rgba(74, 44, 30, .07);
+  --shadow-md: 0 2px 4px rgba(74, 44, 30, .04), 0 12px 28px -6px rgba(74, 44, 30, .12);
+  --shadow-lg: 0 4px 8px rgba(74, 44, 30, .04), 0 24px 56px -12px rgba(74, 44, 30, .18);
+  --shadow-xl: 0 8px 16px rgba(74, 44, 30, .05), 0 40px 88px -20px rgba(74, 44, 30, .26);
+  --shadow-inset: inset 0 1px 2px rgba(74, 44, 30, .08);
+  --shadow-focus: 0 0 0 3px var(--cream-0), 0 0 0 5px var(--blush-400);
+  --shadow-card: var(--shadow-sm);
+  --shadow-card-hover: var(--shadow-md);
+  --shadow-popover: var(--shadow-lg);
+  --shadow-dialog: var(--shadow-xl);
+}
+
+/* Motion */
+:root {
+  --ease-out: cubic-bezier(.22, 1, .36, 1);
+  --ease-in-out: cubic-bezier(.65, 0, .35, 1);
+  --ease-spring: cubic-bezier(.34, 1.56, .64, 1);
+  --dur-instant: 90ms;
+  --dur-fast: 160ms;
+  --dur-base: 240ms;
+  --dur-slow: 420ms;
+  --dur-reveal: 640ms;
+  --press-scale: .97;
+  --hover-lift: -2px;
+}

@@ -1,0 +1,19 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.sm { height: 20px; padding: 0 8px; font-size: 11px; }
+.md { height: 24px; padding: 0 10px; font-size: 12px; }
+
+.neutral { background: var(--cream-100); color: var(--cocoa-700); }
+.blush { background: var(--blush-100); color: var(--blush-700); }
+.apricot { background: var(--apricot-100); color: var(--apricot-700); }
+.sage { background: var(--sage-100); color: var(--sage-700); }
+.plum { background: var(--plum-100); color: var(--plum-700); }

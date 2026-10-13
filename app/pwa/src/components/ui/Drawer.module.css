@@ -1,0 +1,45 @@
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: var(--surface-overlay);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: fade 200ms var(--ease-out);
+}
+
+.panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 41;
+  width: min(460px, 100%);
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  overflow: auto;
+  background: var(--surface-raised);
+  box-shadow: var(--shadow-xl);
+  font-family: var(--font-sans);
+  animation: slide 420ms var(--ease-spring);
+}
+
+.panel:focus-visible {
+  outline: none;
+}
+
+.close {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+}
+
+@keyframes fade {
+  from { opacity: 0; }
+}
+
+@keyframes slide {
+  from { transform: translateX(105%); }
+}

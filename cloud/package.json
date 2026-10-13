@@ -1,0 +1,14 @@
+{
+  "name": "bonbon-cloud",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:rules": "firebase emulators:exec --only firestore --project demo-bonbon \"node --test rules-tests/*.test.js\"",
+    "emulators": "firebase emulators:start --project subscription-business-511510 --import .emulator-data --export-on-exit .emulator-data",
+    "test:functions": "firebase emulators:exec --only firestore --project demo-bonbon \"cd functions && venv/bin/python -m pytest -q\""
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^5.0.0",
+    "firebase": "^12.8.0"
+  }
+}

@@ -1,0 +1,38 @@
+.reasons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.label {
+  font: var(--type-label);
+  color: var(--text-strong);
+}
+
+.optional {
+  font-weight: 400;
+  color: var(--text-subtle);
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.offer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+  padding: 16px;
+  border-radius: var(--radius-md);
+  background: var(--surface-sunken);
+}
+
+.offerText {
+  flex: 1 1 220px;
+  font-size: 14px;
+  color: var(--text-body);
+}

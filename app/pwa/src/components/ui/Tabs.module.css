@@ -1,0 +1,63 @@
+.tabs {
+  display: inline-flex;
+  font-family: var(--font-sans);
+}
+
+.tab {
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.tab[aria-selected="true"] {
+  color: var(--text-strong);
+}
+
+.count {
+  margin-left: 6px;
+  color: var(--text-subtle);
+  font-weight: 500;
+}
+
+/* Pill — segmented control */
+.pill {
+  gap: 4px;
+  padding: 4px;
+  border-radius: 999px;
+  background: var(--surface-sunken);
+}
+
+.pill .tab {
+  height: 38px;
+  padding: 0 18px;
+  border-radius: 999px;
+  font-size: 14px;
+  transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+
+.pill .tab[aria-selected="true"] {
+  background: var(--surface-raised);
+  box-shadow: var(--shadow-xs);
+}
+
+/* Underline — page sections */
+.underline {
+  gap: 28px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.underline .tab {
+  height: 44px;
+  padding: 0;
+  margin-bottom: -1px;
+  border-bottom: 2px solid transparent;
+  font-size: 15px;
+}
+
+.underline .tab[aria-selected="true"] {
+  border-bottom-color: var(--cocoa-900);
+}

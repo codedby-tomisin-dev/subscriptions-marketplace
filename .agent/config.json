@@ -1,0 +1,7 @@
+{
+  "rules": [
+    "rules/product.md",
+    "rules/react_coding_standards.md",
+    "rules/python_coding_standards.md"
+  ]
+}

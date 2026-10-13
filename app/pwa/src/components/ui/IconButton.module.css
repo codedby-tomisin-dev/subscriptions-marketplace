@@ -1,0 +1,52 @@
+.iconButton {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-strong);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-spring);
+}
+
+.iconButton:hover {
+  color: var(--text-strong);
+  background: var(--bg-hover);
+}
+
+.iconButton:active {
+  transform: scale(.92);
+}
+
+.sm { width: 36px; height: 36px; }
+.md { width: 44px; height: 44px; }
+
+.secondary {
+  --bg: var(--surface-raised);
+  --bg-hover: var(--cream-100);
+  --border: var(--border-default);
+}
+
+.ghost {
+  --bg: transparent;
+  --bg-hover: rgba(47, 36, 30, .06);
+  --border: transparent;
+}
+
+.badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--blush-600);
+  color: var(--text-inverse);
+  font: 700 11px/18px var(--font-sans);
+  box-shadow: 0 0 0 2px var(--surface-page);
+}

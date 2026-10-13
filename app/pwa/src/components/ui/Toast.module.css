@@ -1,0 +1,71 @@
+.viewport {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  z-index: 200;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: calc(100% - 32px);
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 300px;
+  max-width: 440px;
+  padding: 14px 14px 14px 18px;
+  border-radius: var(--radius-lg);
+  background: var(--surface-inverse);
+  color: var(--text-inverse);
+  box-shadow: var(--shadow-lg);
+  font-family: var(--font-sans);
+  animation: fadeUp var(--dur-slow) var(--ease-out);
+}
+
+.toast > svg {
+  flex: none;
+}
+
+.body {
+  flex: 1;
+  min-width: 0;
+}
+
+.title {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.message {
+  font-size: 13px;
+  line-height: 1.45;
+  color: rgba(255, 253, 250, .72);
+}
+
+.action {
+  padding: 0 4px;
+  border: 0;
+  background: transparent;
+  color: var(--blush-300);
+  font: 600 14px var(--font-sans);
+  cursor: pointer;
+}
+
+.dismiss {
+  display: inline-flex;
+  padding: 4px;
+  border: 0;
+  background: transparent;
+  color: rgba(255, 253, 250, .6);
+  cursor: pointer;
+}
+
+@media (max-width: 640px) {
+  .toast { min-width: 0; }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}

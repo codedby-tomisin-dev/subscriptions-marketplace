@@ -1,0 +1,51 @@
+.reasons {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.reason {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr) 40px;
+  gap: 16px;
+  align-items: center;
+  font-size: 14px;
+}
+
+.percent {
+  text-align: right;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.saveNote {
+  margin: 4px 0 20px;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.stack {
+  display: flex;
+  gap: 2px;
+  height: 14px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.outcomes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.outcome {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.outcomeLabel {
+  flex: 1;
+}

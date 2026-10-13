@@ -1,0 +1,105 @@
+.input {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-family: var(--font-sans);
+}
+
+.label {
+  font: var(--type-label);
+  color: var(--text-strong);
+}
+
+.field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 50px;
+  padding: 0 16px;
+  border-radius: var(--radius-field);
+  background: var(--surface-raised);
+  border: 1.5px solid var(--border-default);
+  transition: border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.field:focus-within {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 4px rgba(232, 115, 95, .16);
+}
+
+.field[data-invalid] {
+  border-color: var(--danger-fg);
+}
+
+.field[data-invalid]:focus-within {
+  box-shadow: 0 0 0 4px rgba(168, 50, 31, .12);
+}
+
+.field input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font: var(--type-body);
+  color: var(--text-strong);
+}
+
+.field input:disabled {
+  cursor: not-allowed;
+}
+
+.field:has(input:disabled) {
+  background: var(--surface-sunken);
+}
+
+.icon {
+  flex: none;
+  color: var(--text-subtle);
+}
+
+.hint,
+.error {
+  font-size: 13px;
+}
+
+.hint {
+  color: var(--text-muted);
+}
+
+.error {
+  color: var(--danger-fg);
+}
+
+.multiline {
+  height: auto;
+  padding: 12px 16px;
+}
+
+.field textarea,
+.field select {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font: var(--type-body);
+  color: var(--text-strong);
+}
+
+.field textarea {
+  resize: vertical;
+}
+
+.field select {
+  appearance: none;
+  cursor: pointer;
+}
+
+/* The wrapper draws the focus ring (:focus-within above); without this the
+   global :focus-visible ring is drawn again on the bare control inside it. */
+.field input:focus-visible,
+.field textarea:focus-visible,
+.field select:focus-visible {
+  box-shadow: none;
+}

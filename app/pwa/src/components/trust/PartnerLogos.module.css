@@ -1,0 +1,49 @@
+.partners {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px 28px;
+}
+
+.center {
+  justify-content: center;
+}
+
+.partner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.label {
+  font-size: 13px;
+  color: var(--text-subtle);
+  white-space: nowrap;
+}
+
+.mark {
+  color: var(--cocoa-500);
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.stripe {
+  font: 800 22px/1 var(--font-sans);
+  letter-spacing: -0.05em;
+}
+
+.royalMail {
+  font: italic 700 19px/1 var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+.divider {
+  width: 1px;
+  height: 20px;
+  background: var(--border-default);
+}
+
+@media (max-width: 480px) {
+  .divider { display: none; }
+}

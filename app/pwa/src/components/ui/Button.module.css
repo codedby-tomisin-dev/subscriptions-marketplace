@@ -1,0 +1,89 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+  text-decoration: none;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-spring);
+}
+
+.button:hover {
+  color: var(--fg);
+  background: var(--bg-hover);
+}
+
+.button:active:not(:disabled) {
+  transform: scale(var(--press-scale));
+}
+
+.button:disabled {
+  cursor: not-allowed;
+}
+
+.button:disabled:not([aria-busy]) {
+  opacity: .42;
+}
+
+.button:disabled:hover {
+  background: var(--bg);
+}
+
+.spinner {
+  animation: spin .9s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.fullWidth {
+  display: flex;
+  width: 100%;
+}
+
+.sm { height: var(--control-sm); padding: 0 16px; font-size: 14px; gap: 6px; }
+.md { height: var(--control-md); padding: 0 22px; font-size: 15px; gap: 8px; }
+.lg { height: var(--control-lg); padding: 0 30px; font-size: 17px; gap: 10px; }
+
+.primary {
+  --bg: var(--action-primary);
+  --bg-hover: var(--action-primary-hover);
+  --fg: var(--text-inverse);
+  --border: transparent;
+}
+
+.accent {
+  --bg: var(--action-accent);
+  --bg-hover: var(--action-accent-hover);
+  --fg: var(--text-inverse);
+  --border: transparent;
+}
+
+.secondary {
+  --bg: var(--action-secondary);
+  --bg-hover: var(--action-secondary-hover);
+  --fg: var(--text-strong);
+  --border: var(--border-default);
+}
+
+.soft {
+  --bg: var(--blush-100);
+  --bg-hover: var(--blush-200);
+  --fg: var(--blush-700);
+  --border: transparent;
+}
+
+.ghost {
+  --bg: transparent;
+  --bg-hover: rgba(47, 36, 30, .06);
+  --fg: var(--text-strong);
+  --border: transparent;
+}

@@ -1,0 +1,128 @@
+.boxes {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.panel {
+  padding: 20px !important;
+}
+
+.box {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 28px;
+  align-items: start;
+}
+
+.summary {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.image {
+  padding: 6px;
+  border-radius: var(--radius-lg);
+}
+
+.titleLine {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.counts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.items {
+  min-width: 0;
+}
+
+.itemRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 2fr) 120px;
+  gap: 16px;
+  align-items: center;
+  padding: 10px 0;
+  border-top: 1px solid var(--border-subtle);
+  font-size: 14px;
+}
+
+.itemHead {
+  padding-top: 0;
+  border-top: 0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--text-subtle);
+}
+
+.itemName {
+  font-weight: 500;
+  color: var(--text-strong);
+}
+
+.level {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.levelBar {
+  flex: 1;
+}
+
+.levelText {
+  width: 92px;
+  text-align: right;
+  white-space: nowrap;
+  color: var(--text-muted);
+}
+
+.levelText[data-short] {
+  color: var(--danger-fg);
+  font-weight: 600;
+}
+
+.itemAction {
+  text-align: right;
+  font-size: 13px;
+}
+
+@media (max-width: 1100px) {
+  .box { grid-template-columns: 180px minmax(0, 1fr); gap: 20px; }
+}
+
+@media (max-width: 700px) {
+  .box { grid-template-columns: 1fr; }
+  .summary { max-width: 280px; }
+  .itemRow { grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); }
+  .itemAction { grid-column: 1 / -1; text-align: left; }
+}
+
+.archived {
+  margin-top: 20px;
+}
+
+.archivedList {
+  display: flex;
+  flex-direction: column;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.archivedList li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-top: 1px solid var(--border-subtle);
+}

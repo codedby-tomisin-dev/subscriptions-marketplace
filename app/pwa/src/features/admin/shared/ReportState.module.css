@@ -1,0 +1,16 @@
+.state {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 40px 0;
+  color: var(--text-muted);
+}
+
+.spinner {
+  animation: spin .9s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

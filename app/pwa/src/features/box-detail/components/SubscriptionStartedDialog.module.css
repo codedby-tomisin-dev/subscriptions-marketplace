@@ -1,0 +1,27 @@
+.summary {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px;
+  border-radius: var(--radius-lg);
+}
+
+.thumb {
+  flex: 0 0 64px;
+  width: 64px;
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.name {
+  color: var(--text-strong);
+}
+
+.price {
+  font-size: 14px;
+  color: var(--text-muted);
+}

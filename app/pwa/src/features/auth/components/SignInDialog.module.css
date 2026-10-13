@@ -1,0 +1,28 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sent {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.sentIcon {
+  flex: none;
+  color: var(--sage-700);
+}
+
+.sentText {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+.sentText b {
+  color: var(--text-strong);
+  font-weight: 600;
+}

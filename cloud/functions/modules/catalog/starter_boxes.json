@@ -1,0 +1,532 @@
+[
+  {
+    "id": "datenight",
+    "name": "Date night",
+    "tone": "plum",
+    "audience": "For the two of you",
+    "shotDescription": "Candles, two glasses, card game, silk ribbon",
+    "prices": {
+      "week": 1900,
+      "month": 3900
+    },
+    "planNotes": {
+      "week": "A mini date · 3 treats",
+      "month": "The full evening · 6 treats"
+    },
+    "pitch": "One very good evening, on repeat.",
+    "story": "Candles, conversation and something sweet — everything for a night in that feels like a night out. You bring the playlist.",
+    "facts": [
+      {
+        "icon": "Heart",
+        "label": "Made for two"
+      },
+      {
+        "icon": "PackageOpen",
+        "label": "6 treats in the full box"
+      },
+      {
+        "icon": "Wine",
+        "label": "Wine optional, 21+"
+      }
+    ],
+    "ritual": [
+      {
+        "title": "Open it together",
+        "body": "Lid off, glasses out. The first prompt card is already waiting on top."
+      },
+      {
+        "title": "Set the scene",
+        "body": "Light the candle, dim the lights, deal the cards. Phones go in the box."
+      },
+      {
+        "title": "Talk about real things",
+        "body": "Fifty prompts that go well past “so, how was your day?”"
+      }
+    ],
+    "contents": [
+      {
+        "name": "Date night ideas",
+        "description": "50 conversation prompts",
+        "tone": "blush"
+      },
+      {
+        "name": "Card game",
+        "description": "Two players, zero sore losers",
+        "tone": "apricot"
+      },
+      {
+        "name": "Hand-poured candle",
+        "description": "Lavender, jasmine, rosewood",
+        "tone": "cream"
+      },
+      {
+        "name": "Chocolate selection",
+        "description": "Nine truffles, made to share",
+        "tone": "plum"
+      },
+      {
+        "name": "A bottle of red",
+        "description": "Shiraz, swap for alcohol-free",
+        "tone": "plum"
+      },
+      {
+        "name": "Cosy socks",
+        "description": "One pair, impossibly soft",
+        "tone": "cream"
+      }
+    ],
+    "testimonial": {
+      "quote": "We hadn’t had a phone-free evening in years. Now it’s our Friday thing.",
+      "attribution": "Priya & Sam, members since June"
+    },
+    "image": null,
+    "items": [
+      {
+        "id": "datenight-cards",
+        "name": "Date night ideas cards",
+        "inWeeklyBox": true
+      },
+      {
+        "id": "datenight-game",
+        "name": "Card game",
+        "inWeeklyBox": false
+      },
+      {
+        "id": "datenight-candle",
+        "name": "Hand-poured candle",
+        "inWeeklyBox": true
+      },
+      {
+        "id": "datenight-chocolate",
+        "name": "Chocolate selection",
+        "inWeeklyBox": true
+      },
+      {
+        "id": "datenight-shiraz",
+        "name": "Shiraz 75cl",
+        "inWeeklyBox": false
+      },
+      {
+        "id": "datenight-socks",
+        "name": "Cosy socks",
+        "inWeeklyBox": false
+      }
+    ],
+    "status": "active",
+    "sortOrder": 0
+  },
+  {
+    "id": "selfcare",
+    "name": "Self-care",
+    "tone": "sage",
+    "audience": "For a slow Sunday",
+    "shotDescription": "Bath soak, eye mask, journal, tea tin",
+    "prices": {
+      "week": 1500,
+      "month": 3200
+    },
+    "planNotes": {
+      "week": "A little reset · 3 treats",
+      "month": "The full ritual · 7 treats"
+    },
+    "pitch": "A slower Sunday, delivered.",
+    "story": "Tea, a face mask and a candle that smells like an afternoon off. We pack the calm — you just have to open it.",
+    "facts": [
+      {
+        "icon": "Leaf",
+        "label": "Clean, cruelty-free picks"
+      },
+      {
+        "icon": "PackageOpen",
+        "label": "7 treats in the full box"
+      },
+      {
+        "icon": "Clock",
+        "label": "About one lovely hour"
+      }
+    ],
+    "ritual": [
+      {
+        "title": "Rest",
+        "body": "Kettle on, candle lit. The rest of the world can wait an hour."
+      },
+      {
+        "title": "Replenish",
+        "body": "Mask on, hand cream in, gua sha doing its quiet thing."
+      },
+      {
+        "title": "Refocus",
+        "body": "A page of journalling, a square of dark chocolate, done."
+      }
+    ],
+    "contents": [
+      {
+        "name": "Herbal tea",
+        "description": "Aniseed, fennel and cardamom",
+        "tone": "sage"
+      },
+      {
+        "name": "Hydrating sheet mask",
+        "description": "Rice and ginseng",
+        "tone": "blush"
+      },
+      {
+        "name": "Jade gua sha",
+        "description": "For the jaw you clench",
+        "tone": "sage"
+      },
+      {
+        "name": "Soy candle",
+        "description": "Basil and jasmine",
+        "tone": "cream"
+      },
+      {
+        "name": "Hand cream",
+        "description": "20% shea, made in France",
+        "tone": "lilac"
+      },
+      {
+        "name": "Dark chocolate",
+        "description": "70% cocoa, no regrets",
+        "tone": "apricot"
+      }
+    ],
+    "testimonial": {
+      "quote": "It’s the one hour a week nobody else gets to book.",
+      "attribution": "Hana, member since March"
+    },
+    "image": null,
+    "items": [
+      {
+        "id": "selfcare-tea",
+        "name": "Herbal tea",
+        "inWeeklyBox": true
+      },
+      {
+        "id": "selfcare-mask",
+        "name": "Sheet mask",
+        "inWeeklyBox": true
+      },
+      {
+        "id": "selfcare-guasha",
+        "name": "Jade gua sha",
+        "inWeeklyBox": false
+      },
+      {
+        "id": "selfcare-candle",
+        "name": "Soy candle",
+        "inWeeklyBox": false
+      },
+      {
+        "id": "selfcare-handcream",
+        "name": "Hand cream",
+        "inWeeklyBox": true
+      }
+    ],
+    "status": "active",
+    "sortOrder": 1
+  },
+  {
+    "id": "beauty",
+    "name": "Beauty",
+    "tone": "blush",
+    "audience": "For your shelfie",
+    "shotDescription": "Five full-size skincare and makeup treats",
+    "prices": {
+      "week": 1400,
+      "month": 2800
+    },
+    "planNotes": {
+      "week": "A top-up · 2 treats",
+      "month": "The full edit · 5 treats"
+    },
+    "pitch": "Your shelfie, refreshed.",
+    "story": "Full-size skincare and makeup, picked for your skin and never the same twice. Like a friend who works at a beauty counter.",
+    "facts": [
+      {
+        "icon": "Sparkles",
+        "label": "Full-size, never samples"
+      },
+      {
+        "icon": "PackageOpen",
+        "label": "5 treats in the full box"
+      },
+      {
+        "icon": "BadgeCheck",
+        "label": "Worth £100+ every month"
+      }
+    ],
+    "ritual": [
+      {
+        "title": "Tell us your skin",
+        "body": "Dry, oily, sensitive, allergic to everything — noted."
+      },
+      {
+        "title": "Unwrap the edit",
+        "body": "Five things that suit you, wrapped like a present."
+      },
+      {
+        "title": "Keep what you love",
+        "body": "Rate each one and the next box gets smarter."
+      }
+    ],
+    "contents": [
+      {
+        "name": "Glow serum",
+        "description": "Vitamin C, 30ml",
+        "tone": "apricot"
+      },
+      {
+        "name": "Lip tint",
+        "description": "In a shade that suits you",
+        "tone": "blush"
+      },
+      {
+        "name": "Cleansing balm",
+        "description": "Melts makeup, not your skin",
+        "tone": "cream"
+      },
+      {
+        "name": "Brow gel",
+        "description": "Clear, holds all day",
+        "tone": "lilac"
+      },
+      {
+        "name": "SPF moisturiser",
+        "description": "SPF 30, no white cast",
+        "tone": "sage"
+      }
+    ],
+    "testimonial": {
+      "quote": "Half my bathroom shelf came out of these boxes and I’m not mad about it.",
+      "attribution": "Chloe, member since 2024"
+    },
+    "image": null,
+    "items": [
+      {
+        "id": "beauty-serum",
+        "name": "Glow serum",
+        "inWeeklyBox": true
+      },
+      {
+        "id": "beauty-liptint",
+        "name": "Lip tint",
+        "inWeeklyBox": true
+      },
+      {
+        "id": "beauty-balm",
+        "name": "Cleansing balm",
+        "inWeeklyBox": false
+      },
+      {
+        "id": "beauty-spf",
+        "name": "SPF moisturiser",
+        "inWeeklyBox": false
+      }
+    ],
+    "status": "active",
+    "sortOrder": 2
+  },
+  {
+    "id": "snacks",
+    "name": "Snack drawer",
+    "tone": "apricot",
+    "audience": "For the 4pm slump",
+    "shotDescription": "Small-batch chocolate, crisps, cookies",
+    "prices": {
+      "week": 1200,
+      "month": 2600
+    },
+    "planNotes": {
+      "week": "A week of treats · 6 snacks",
+      "month": "The big drawer · 14 snacks"
+    },
+    "pitch": "The 4pm slump, solved.",
+    "story": "Small-batch chocolate, proper crisps and cookies you’ll hide from housemates. From makers you haven’t found yet.",
+    "facts": [
+      {
+        "icon": "Cookie",
+        "label": "From independent makers"
+      },
+      {
+        "icon": "PackageOpen",
+        "label": "14 snacks in the full box"
+      },
+      {
+        "icon": "WheatOff",
+        "label": "Gluten-free option"
+      }
+    ],
+    "ritual": [
+      {
+        "title": "Stock the drawer",
+        "body": "Everything’s shelf-stable, so it can live at your desk."
+      },
+      {
+        "title": "Reach in blind",
+        "body": "Sweet, salty, somewhere in between. All good options."
+      },
+      {
+        "title": "Find a new favourite",
+        "body": "Every maker is listed, so you can buy more direct."
+      }
+    ],
+    "contents": [
+      {
+        "name": "Sea salt chocolate",
+        "description": "Single-origin, 70%",
+        "tone": "apricot"
+      },
+      {
+        "name": "Hand-cooked crisps",
+        "description": "Rosemary and sea salt",
+        "tone": "cream"
+      },
+      {
+        "name": "Brown butter cookies",
+        "description": "Two, individually wrapped",
+        "tone": "apricot"
+      },
+      {
+        "name": "Spiced nuts",
+        "description": "Maple and chilli",
+        "tone": "blush"
+      },
+      {
+        "name": "Fruit leather",
+        "description": "Mango, nothing added",
+        "tone": "sage"
+      }
+    ],
+    "testimonial": {
+      "quote": "My team now plans meetings around when my box arrives.",
+      "attribution": "Jordan, member since May"
+    },
+    "image": null,
+    "items": [
+      {
+        "id": "snacks-chocolate",
+        "name": "Sea salt chocolate",
+        "inWeeklyBox": true
+      },
+      {
+        "id": "snacks-crisps",
+        "name": "Hand-cooked crisps",
+        "inWeeklyBox": true
+      },
+      {
+        "id": "snacks-cookies",
+        "name": "Brown butter cookies",
+        "inWeeklyBox": true
+      },
+      {
+        "id": "snacks-nuts",
+        "name": "Spiced nuts",
+        "inWeeklyBox": false
+      }
+    ],
+    "status": "active",
+    "sortOrder": 3
+  },
+  {
+    "id": "home",
+    "name": "Cozy home",
+    "tone": "lilac",
+    "audience": "For your nest",
+    "shotDescription": "Candle, linen spray, ceramic dish, plant",
+    "prices": {
+      "week": 1600,
+      "month": 3400
+    },
+    "planNotes": {
+      "week": "A small touch · 2 pieces",
+      "month": "The full nest · 5 pieces"
+    },
+    "pitch": "Your nest, a little nicer.",
+    "story": "Candles, linen spray and small, lovely objects that make a room feel looked after. Seasonal, never cluttery.",
+    "facts": [
+      {
+        "icon": "House",
+        "label": "Seasonal, small-batch"
+      },
+      {
+        "icon": "PackageOpen",
+        "label": "5 pieces in the full box"
+      },
+      {
+        "icon": "Recycle",
+        "label": "Plastic-free packing"
+      }
+    ],
+    "ritual": [
+      {
+        "title": "Unwrap",
+        "body": "Everything comes in tissue, nothing in plastic."
+      },
+      {
+        "title": "Place it",
+        "body": "A dish by the door, a candle by the bath, a sprig on the sill."
+      },
+      {
+        "title": "Breathe in",
+        "body": "Linen spray on the pillows. You’ll sleep like it’s a hotel."
+      }
+    ],
+    "contents": [
+      {
+        "name": "Seasonal candle",
+        "description": "Fig and cedar, 40-hour burn",
+        "tone": "lilac"
+      },
+      {
+        "name": "Linen spray",
+        "description": "Lavender and cotton",
+        "tone": "cream"
+      },
+      {
+        "name": "Ceramic trinket dish",
+        "description": "Handmade, slightly imperfect",
+        "tone": "blush"
+      },
+      {
+        "name": "Mini plant",
+        "description": "Hard to kill, promise",
+        "tone": "sage"
+      },
+      {
+        "name": "Tea towel",
+        "description": "Organic cotton",
+        "tone": "apricot"
+      }
+    ],
+    "testimonial": {
+      "quote": "My flat finally looks like someone who has their life together lives here.",
+      "attribution": "Ade, member since January"
+    },
+    "image": null,
+    "items": [
+      {
+        "id": "home-candle",
+        "name": "Seasonal candle",
+        "inWeeklyBox": true
+      },
+      {
+        "id": "home-spray",
+        "name": "Linen spray",
+        "inWeeklyBox": true
+      },
+      {
+        "id": "home-dish",
+        "name": "Ceramic dish",
+        "inWeeklyBox": false
+      },
+      {
+        "id": "home-plant",
+        "name": "Mini plant",
+        "inWeeklyBox": false
+      }
+    ],
+    "status": "active",
+    "sortOrder": 4
+  }
+]
