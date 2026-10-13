@@ -96,6 +96,11 @@ a:hover {
   .bb-container {
     padding-inline: 20px;
   }
+
+  .bb-heading {
+    font-size: 32px;
+    line-height: 1.05;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

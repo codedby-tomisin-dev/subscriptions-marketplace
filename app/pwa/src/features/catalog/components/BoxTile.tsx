@@ -1,7 +1,7 @@
 import Link from "next/link";
 import clsx from "clsx";
 import { ArrowUpRight } from "lucide-react";
-import { ProductImage } from "@/components/ui";
+import { Badge, ProductImage } from "@/components/ui";
 import { toneSurface } from "@/shared/types";
 import { formatPrice } from "@/shared/utils";
 import type { Box } from "../types";
@@ -13,13 +13,15 @@ interface BoxTileProps {
   index: number;
   /** Vertical nudge for the playful staggered row on the home page. */
   offset?: number;
+  /** On phones, the home page's lead tile: full width, landscape, badged. */
+  featured?: boolean;
 }
 
-export function BoxTile({ box, index, offset = 0 }: BoxTileProps) {
+export function BoxTile({ box, index, offset = 0, featured = false }: BoxTileProps) {
   return (
     <Link
       href={`/boxes/${box.id}`}
-      className={clsx(styles.tile, "bb-rise")}
+      className={clsx(styles.tile, featured && styles.featured, "bb-rise")}
       style={{ marginTop: offset, animationDelay: `${120 + index * 60}ms`, background: toneSurface(box.tone) }}
     >
       <ProductImage
@@ -30,15 +32,22 @@ export function BoxTile({ box, index, offset = 0 }: BoxTileProps) {
         radius="var(--radius-lg)"
         label={box.shotDescription}
         background="var(--cream-0)"
-        sizes="(max-width: 760px) 42vw, 20vw"
+        sizes={featured ? "(max-width: 640px) 100vw, 20vw" : "(max-width: 640px) 50vw, (max-width: 760px) 42vw, 20vw"}
       >
         <span className={styles.go} aria-hidden>
           <ArrowUpRight size={18} />
         </span>
+        {featured && (
+          <Badge tone="blush" size="sm" className={styles.badge}>
+            Most loved
+          </Badge>
+        )}
       </ProductImage>
       <div className={styles.foot}>
-        <span className={styles.name}>{box.name}</span>
-        <span className={styles.audience}>{box.audience}</span>
+        <span className={styles.identity}>
+          <span className={styles.name}>{box.name}</span>
+          <span className={styles.audience}>{box.audience}</span>
+        </span>
         <span className={styles.price}>
           <small>from</small>{formatPrice(box.prices.week)}
         </span>

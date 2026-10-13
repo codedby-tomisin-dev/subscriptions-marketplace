@@ -14,6 +14,7 @@
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--border-subtle);
+  transition: background 240ms var(--ease-out), border-color 240ms var(--ease-out);
 }
 
 .wordmark,
@@ -30,6 +31,68 @@
   margin-left: auto;
 }
 
+.search,
+.account,
+.phoneOnly {
+  display: contents;
+}
+
+.phoneOnly,
+.boxTitle {
+  display: none;
+}
+
 @media (max-width: 640px) {
-  .nav { padding: 0 20px; }
+  .nav {
+    gap: 12px;
+    padding: 0 12px 0 20px;
+  }
+
+  .wordmark,
+  .wordmark:hover {
+    font-size: 26px;
+  }
+
+  .account { display: none; }
+
+  /* Box pages: back and share float over the tinted intro; the bar fills in on scroll. */
+  .onBox .nav {
+    padding-left: 12px;
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-color: transparent;
+  }
+
+  .onBox.scrolled .nav {
+    background: rgba(255, 253, 250, .82);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-color: var(--border-subtle);
+  }
+
+  .onBox .wordmark,
+  .onBox .search {
+    display: none;
+  }
+
+  .onBox .phoneOnly { display: contents; }
+
+  .onBox .boxTitle {
+    display: block;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-align: center;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font: 600 16px var(--font-sans);
+    color: var(--text-strong);
+    opacity: 0;
+    transition: opacity 240ms var(--ease-out);
+  }
+
+  .onBox.scrolled .boxTitle { opacity: 1; }
+
+  .onBox .actions { margin-left: 0; }
 }

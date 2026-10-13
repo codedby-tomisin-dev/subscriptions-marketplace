@@ -1,4 +1,4 @@
-import { SiteFooter, SiteHeader } from "@/components/layout";
+import { SiteFooter, SiteHeader, TabBar } from "@/components/layout";
 
 export default function StorefrontLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
@@ -6,6 +6,7 @@ export default function StorefrontLayout({ children }: Readonly<{ children: Reac
       <SiteHeader />
       {children}
       <SiteFooter />
+      <TabBar />
     </>
   );
 }

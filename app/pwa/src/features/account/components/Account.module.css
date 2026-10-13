@@ -101,3 +101,36 @@
   gap: 16px;
   max-width: 460px;
 }
+
+.phoneOnly {
+  display: none;
+}
+
+/* Phones: a tighter page; "Add another box" moves under the list. */
+@media (max-width: 640px) {
+  .page { padding-top: 32px; }
+
+  .head { margin-bottom: 24px; }
+  .greeting { gap: 6px; }
+  .greeting h1 { font-size: 40px; }
+  .summary { font-size: 16px; }
+
+  .wideOnly { display: none; }
+  .phoneOnly { display: block; }
+
+  .subscriptions {
+    gap: 12px;
+    margin-top: 20px;
+  }
+
+  .help {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    margin-top: 12px;
+    padding: 20px;
+  }
+
+  .helpText { flex: none; }
+  .orders { margin-top: 4px; }
+}

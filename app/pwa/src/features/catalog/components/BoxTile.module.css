@@ -56,6 +56,13 @@
   padding: 14px 10px 8px;
 }
 
+.identity {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
 .name {
   font: 700 19px/1.1 var(--font-display);
   letter-spacing: -0.03em;
@@ -85,4 +92,65 @@
   font: 500 12px/1 var(--font-sans);
   letter-spacing: 0;
   color: var(--text-muted);
+}
+
+/* Only the featured tile shows it, and only on phones. */
+.badge {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .tile {
+    padding: 6px;
+  }
+
+  .tile:active {
+    transform: scale(.97);
+  }
+
+  .foot {
+    gap: 10px;
+    padding: 12px 8px 6px;
+  }
+
+  .identity { gap: 2px; }
+
+  .name { font-size: 18px; }
+
+  .audience {
+    font-size: 13px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .price {
+    margin-top: 0;
+    align-self: flex-start;
+    font-size: 20px;
+  }
+
+  .price small { font-size: 11px; }
+
+  .featured > :first-child {
+    aspect-ratio: 4 / 3 !important;
+  }
+
+  .featured .badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    display: inline-flex;
+  }
+
+  .featured .foot {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 14px 10px 8px;
+  }
+
+  .featured .name { font-size: 26px; }
+  .featured .audience { font-size: 14px; }
+  .featured .price { align-self: auto; font-size: 26px; }
 }

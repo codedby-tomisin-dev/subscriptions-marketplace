@@ -62,7 +62,31 @@
 }
 
 .reassurances svg {
+  width: 16px;
+  height: 16px;
   color: var(--blush-600);
+}
+
+/* Phone-only "help me pick" card; wide screens have the button up top. */
+.help {
+  display: none;
+}
+
+.helpText {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.helpText b {
+  font: 700 22px/1.1 var(--font-display);
+  letter-spacing: -0.03em;
+  color: var(--text-strong);
+}
+
+.helpText span {
+  font-size: 15px;
+  color: var(--text-muted);
 }
 
 .partners {
@@ -75,8 +99,8 @@
   }
 }
 
-/* Phones: the row becomes a horizontal swipe carousel. */
-@media (max-width: 760px) {
+/* Small tablets: the row becomes a horizontal swipe carousel. */
+@media (min-width: 641px) and (max-width: 760px) {
   .boxRow {
     display: flex;
     gap: 14px;
@@ -90,5 +114,65 @@
     flex: 0 0 42%;
     scroll-snap-align: start;
     margin-top: 0 !important;
+  }
+}
+
+/* Phones: left-aligned intro, a featured tile over a two-up grid, then help and reassurance. */
+@media (max-width: 640px) {
+  .page {
+    padding-top: 32px;
+    padding-bottom: 0;
+  }
+
+  .intro {
+    align-items: flex-start;
+    gap: 16px;
+    text-align: left;
+  }
+
+  .intro h1 { font-size: 46px; line-height: 1.02; }
+  .intro p { font-size: 17px; line-height: 1.5; }
+
+  .wideOnly,
+  .ctas {
+    display: none;
+  }
+
+  .rating { justify-content: flex-start; }
+
+  .boxRow {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin: 32px -8px 0;
+  }
+
+  .boxRow > * { margin-top: 0 !important; }
+  .boxRow > :first-child { grid-column: 1 / -1; }
+
+  .help {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    margin-top: 40px;
+    padding: 20px;
+    border-radius: var(--radius-xl);
+    background: var(--surface-raised);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .reassurances {
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 24px;
+    font-size: 15px;
+    color: var(--text-body);
+  }
+
+  .reassurances li { gap: 10px; }
+
+  .reassurances svg {
+    width: 18px;
+    height: 18px;
   }
 }

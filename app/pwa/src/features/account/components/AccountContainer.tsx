@@ -66,9 +66,11 @@ function Account({ subscriptions, email }: { subscriptions: Subscription[]; emai
           <h1 className="bb-heading">{name ? `Hi, ${name}.` : "Hi there."}</h1>
           <p className={styles.summary}>{summarise(subscriptions)}</p>
         </div>
-        <Button variant="secondary" iconLeft={Plus} href="/">
-          Add another box
-        </Button>
+        <span className={styles.wideOnly}>
+          <Button variant="secondary" iconLeft={Plus} href="/">
+            Add another box
+          </Button>
+        </span>
       </div>
 
       <Tabs
@@ -108,6 +110,13 @@ function Account({ subscriptions, email }: { subscriptions: Subscription[]; emai
               />
             );
           })}
+          {!!subscriptions.length && (
+            <span className={styles.phoneOnly}>
+              <Button variant="secondary" iconLeft={Plus} href="/" fullWidth>
+                Add another box
+              </Button>
+            </span>
+          )}
           <Card tone="blush" elevation="none" className={styles.help}>
             <HeartHandshake size={24} aria-hidden />
             <div className={styles.helpText}>

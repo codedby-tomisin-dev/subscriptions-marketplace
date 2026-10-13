@@ -8,7 +8,8 @@ interface IconButtonProps {
   icon: LucideIcon;
   /** Accessible name; also shown as the tooltip. */
   label: string;
-  variant?: "ghost" | "secondary";
+  /** `glass` floats over photos and tinted bands. */
+  variant?: "ghost" | "secondary" | "glass";
   size?: "sm" | "md";
   /** Small count bubble, hidden when 0 or undefined. */
   badge?: number;

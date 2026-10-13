@@ -44,3 +44,17 @@
 @media (max-width: 760px) {
   .meta { align-items: flex-start; }
 }
+
+/* Phones: a short footer with room underneath for the floating tab bar or buy bar. */
+@media (max-width: 640px) {
+  .footer {
+    margin-top: 72px;
+    padding: 36px 0 calc(140px + env(safe-area-inset-bottom));
+  }
+
+  .wordmark { font-size: 28px; }
+  .tagline { font-size: 14px; }
+  .partners { display: none; }
+  .meta { gap: 10px; }
+  .copyright { font-size: 12px; }
+}

@@ -8,6 +8,7 @@ export { IconButton } from "./IconButton";
 export { Input } from "./Input";
 export { ProductImage } from "./ProductImage";
 export { Select } from "./Select";
+export { Sheet } from "./Sheet";
 export { Switch } from "./Switch";
 export { Tabs } from "./Tabs";
 export { Tag } from "./Tag";

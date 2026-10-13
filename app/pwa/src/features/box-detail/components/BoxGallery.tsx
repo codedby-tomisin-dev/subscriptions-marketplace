@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type CSSProperties, type UIEvent } from "react";
 import clsx from "clsx";
 import { ProductImage } from "@/components/ui";
 import { BoxIcon, type Box } from "@/features/catalog";
@@ -14,9 +14,40 @@ const SUPPORTING_SHOTS = ["Lid off, hands lifting the tissue", "Everything laid 
 export function BoxGallery({ box }: { box: Box }) {
   const shots = [{ src: box.image, label: box.shotDescription }, ...SUPPORTING_SHOTS.map((label) => ({ src: undefined, label }))];
   const [selected, setSelected] = useState(0);
+  const [swiped, setSwiped] = useState(0);
+  const tint = toneSurface(box.tone);
+
+  const onSwipe = (event: UIEvent<HTMLDivElement>) => {
+    const track = event.currentTarget;
+    setSwiped(Math.round(track.scrollLeft / track.clientWidth));
+  };
 
   return (
-    <section className={`bb-rise ${styles.showcase}`}>
+    <section className={`bb-rise ${styles.showcase}`} style={{ "--tint": tint } as CSSProperties}>
+      {/* Phones swipe through full-width photos; wide screens pick from thumbnails. */}
+      <div className={styles.carousel}>
+        <div className={styles.track} onScroll={onSwipe}>
+          {shots.map((shot) => (
+            <div key={shot.label} className={styles.slide}>
+              <ProductImage
+                src={shot.src}
+                alt={`${box.name} box — ${shot.label}`}
+                tone={box.tone}
+                ratio="1 / 1"
+                radius="var(--radius-2xl)"
+                label={shot.label}
+                background={tint}
+                sizes="100vw"
+              />
+            </div>
+          ))}
+        </div>
+        <div className={styles.dots} aria-hidden>
+          {shots.map((shot, index) => (
+            <span key={shot.label} className={clsx(index === swiped && styles.dotOn)} />
+          ))}
+        </div>
+      </div>
       <div className={styles.gallery}>
         <ProductImage
           key={selected}
@@ -26,7 +57,7 @@ export function BoxGallery({ box }: { box: Box }) {
           ratio="4 / 3"
           radius="var(--radius-2xl)"
           label={shots[selected].label}
-          background={toneSurface(box.tone)}
+          background={tint}
           sizes="(max-width: 860px) 100vw, 60vw"
         />
         <div className={styles.thumbs}>

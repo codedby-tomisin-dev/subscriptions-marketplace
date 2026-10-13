@@ -62,6 +62,51 @@
   100% { transform: scale(1); }
 }
 
+@keyframes rise {
+  from { transform: translateY(105%); }
+}
+
+/* Phones: dialogs become bottom sheets, with the main action on top and full width. */
 @media (max-width: 640px) {
-  .panel { padding: 24px; }
+  .overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .panel {
+    max-width: none !important;
+    max-height: calc(100% - 50px);
+    padding: 10px 20px calc(28px + env(safe-area-inset-bottom));
+    border-radius: 32px 32px 0 0;
+    animation: rise 560ms var(--ease-spring);
+  }
+
+  .panel::before {
+    content: "";
+    display: block;
+    width: 40px;
+    height: 5px;
+    margin: 0 auto 16px;
+    border-radius: 99px;
+    background: var(--cream-200);
+  }
+
+  .close { top: 22px; }
+
+  .title {
+    margin-right: 48px;
+    font: var(--weight-bold) 28px/1.05 var(--font-display);
+    letter-spacing: var(--tracking-heading);
+  }
+
+  .footer {
+    flex-direction: column-reverse;
+    gap: 8px;
+  }
+
+  .footer > * { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel { animation: none; }
 }

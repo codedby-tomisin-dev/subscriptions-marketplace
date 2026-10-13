@@ -58,3 +58,44 @@
 @media (max-width: 860px) {
   .bar { display: flex; }
 }
+
+.monthly {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  font: 800 22px/1 var(--font-display);
+  letter-spacing: -0.04em;
+  color: var(--text-strong);
+  white-space: nowrap;
+}
+
+.monthly small {
+  font: 500 13px var(--font-sans);
+  letter-spacing: 0;
+  color: var(--text-muted);
+}
+
+/* Phones: pinned to the bottom edge in place of the tab bar. */
+.phone {
+  left: 12px;
+  right: 12px;
+  bottom: calc(24px + env(safe-area-inset-bottom));
+  width: auto;
+  gap: 12px;
+  padding: 8px 8px 8px 20px;
+  border: 1px solid var(--border-subtle);
+  transform: translateY(140%);
+}
+
+.phone .text {
+  flex: 1;
+  gap: 3px;
+}
+
+.phone .price {
+  font-size: 12px;
+}
+
+.phone.visible {
+  transform: none;
+}

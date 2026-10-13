@@ -11,7 +11,9 @@ export function SiteFooter() {
           <span className={styles.tagline}>Little boxes of joy, packed by hand.</span>
         </div>
         <div className={styles.meta}>
-          <PartnerLogos />
+          <span className={styles.partners}>
+            <PartnerLogos />
+          </span>
           <span className={styles.copyright}>
             © {new Date().getFullYear()} {BRAND_NAME}. Made with tissue paper and good intentions.
           </span>

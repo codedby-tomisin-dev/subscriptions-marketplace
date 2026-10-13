@@ -5,6 +5,7 @@ import { ArrowRight, HeartHandshake, MessageCircle, Package, Repeat } from "luci
 import { Button } from "@/components/ui";
 import { PartnerLogos, Stars, STORE_RATING } from "@/components/trust";
 import { BoxTile, type Box } from "@/features/catalog";
+import { useIsPhone } from "@/shared/hooks";
 import { scrollToElement } from "@/shared/utils";
 import { AnimatedHeadline } from "@/components/typography";
 import styles from "./Home.module.css";
@@ -20,6 +21,7 @@ const REASSURANCES = [
 
 export function HomeContainer({ boxes }: { boxes: Box[] }) {
   const boxRowRef = useRef<HTMLDivElement>(null);
+  const isPhone = useIsPhone();
 
   return (
     <main className={`bb-container ${styles.page}`}>
@@ -28,8 +30,8 @@ export function HomeContainer({ boxes }: { boxes: Box[] }) {
           <AnimatedHeadline text={HEADLINE} />
         </h1>
         <p className="bb-lede" style={{ maxWidth: 560 }}>
-          Romance, self-care, beauty, snacks and home — arriving as often as you’d like. Not sure which one’s you? That’s
-          what we’re here for.
+          Romance, self-care, beauty, snacks and home — arriving as often as you’d like.
+          <span className={styles.wideOnly}> Not sure which one’s you? That’s what we’re here for.</span>
         </p>
         <div className={styles.ctas}>
           <Button size="lg" iconRight={ArrowRight} onClick={() => scrollToElement(boxRowRef.current, 100)}>
@@ -49,20 +51,30 @@ export function HomeContainer({ boxes }: { boxes: Box[] }) {
 
       <div ref={boxRowRef} className={styles.boxRow}>
         {boxes.map((box, index) => (
-          <BoxTile key={box.id} box={box} index={index} offset={TILE_OFFSETS[index] ?? 0} />
+          <BoxTile key={box.id} box={box} index={index} offset={TILE_OFFSETS[index] ?? 0} featured={index === 0} />
         ))}
+      </div>
+
+      <div className={styles.help}>
+        <div className={styles.helpText}>
+          <b>Not sure which one’s you?</b>
+          <span>Tell us who it’s for. We’ll pick.</span>
+        </div>
+        <Button variant="secondary" iconLeft={MessageCircle}>
+          Help me pick
+        </Button>
       </div>
 
       <ul className={styles.reassurances}>
         {REASSURANCES.map(({ icon: Icon, label }) => (
           <li key={label}>
-            <Icon size={16} aria-hidden />
+            <Icon aria-hidden />
             {label}
           </li>
         ))}
       </ul>
       <div className={styles.partners}>
-        <PartnerLogos center />
+        <PartnerLogos center={!isPhone} />
       </div>
     </main>
   );

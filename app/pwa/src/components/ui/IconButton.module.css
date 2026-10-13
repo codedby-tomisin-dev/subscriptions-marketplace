@@ -37,6 +37,14 @@
   --border: transparent;
 }
 
+.glass {
+  --bg: rgba(255, 253, 250, .78);
+  --bg-hover: rgba(255, 253, 250, .95);
+  --border: rgba(255, 255, 255, .6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
 .badge {
   position: absolute;
   top: -2px;

@@ -1,0 +1,68 @@
+.wrap {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+}
+
+.scrim {
+  position: absolute;
+  inset: 0;
+  background: var(--surface-overlay);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  opacity: 0;
+  transition: opacity 320ms var(--ease-out);
+}
+
+.open .scrim {
+  opacity: 1;
+  animation: fade 320ms var(--ease-out);
+}
+
+/* Runs 40px past the bottom edge so the spring overshoot never shows a gap. */
+.sheet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -40px;
+  max-height: calc(100% - 50px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  padding: 10px 20px calc(80px + env(safe-area-inset-bottom));
+  border-radius: 32px 32px 0 0;
+  background: var(--surface-raised);
+  box-shadow: var(--shadow-xl);
+  font-family: var(--font-sans);
+  transform: translateY(105%);
+  transition: transform 320ms var(--ease-out);
+}
+
+.sheet:focus-visible {
+  box-shadow: var(--shadow-xl);
+}
+
+.open .sheet {
+  transform: none;
+  animation: slideIn 560ms var(--ease-spring);
+}
+
+.handle {
+  width: 40px;
+  height: 5px;
+  margin: 0 auto 16px;
+  border-radius: 99px;
+  background: var(--cream-200);
+}
+
+@keyframes slideIn {
+  from { transform: translateY(105%); }
+}
+
+@keyframes fade {
+  from { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet, .open .sheet, .scrim, .open .scrim { transition: none; animation: none; }
+}

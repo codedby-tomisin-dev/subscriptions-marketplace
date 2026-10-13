@@ -29,8 +29,30 @@
 
 .panelHead {
   display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.panelIdentity {
+  display: flex;
+  flex: 1;
   flex-direction: column;
   gap: 6px;
+  min-width: 0;
+}
+
+.sheetThumb {
+  flex: 0 0 52px;
+  width: 52px;
+  padding: 4px;
+  border-radius: 14px;
+}
+
+/* The same panel inside the phone's plan sheet. */
+.sheetPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 .panelRating {
@@ -177,6 +199,17 @@
   }
 }
 
-@media (max-width: 420px) {
+/* In the sheet, the dates run to the screen edge. */
+.sheetPanel .dates {
+  margin: 0 -20px;
+  padding: 0 20px;
+}
+
+/* Phones buy from the plan sheet instead. */
+@media (max-width: 640px) {
+  .aside { display: none; }
+}
+
+@media (max-width: 340px) {
   .cadences { grid-template-columns: 1fr; }
 }

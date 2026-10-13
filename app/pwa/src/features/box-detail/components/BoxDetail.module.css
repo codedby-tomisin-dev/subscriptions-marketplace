@@ -46,6 +46,11 @@
   gap: 12px;
 }
 
+/* Phone-only swipe carousel. The tint fills the top half, continuing the intro band. */
+.carousel {
+  display: none;
+}
+
 .thumbs {
   display: flex;
   gap: 10px;
@@ -342,8 +347,179 @@
   .ritualCard { margin-top: 0; }
 }
 
+/* Phones: an app-style page. The intro runs up under the see-through header. */
 @media (max-width: 640px) {
-  .testimonial { padding: 32px; }
+  .intro {
+    margin-top: calc(-1 * var(--nav-height));
+    padding: calc(var(--nav-height) + 16px) 0 28px;
+  }
+
+  .introCopy { gap: 14px; }
+  .introCopy h1 { font-size: 42px !important; line-height: 1.02; }
+  .introCopy p { font-size: 16px; }
+  .breadcrumb { display: none; }
+
+  .layout {
+    padding: 0;
+  }
+
+  .gallery { display: none; }
+
+  .carousel {
+    display: block;
+    background: linear-gradient(var(--tint) 46%, transparent 46%);
+  }
+
+  .track {
+    display: flex;
+    gap: 10px;
+    padding: 0 20px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding: 0 20px;
+    scrollbar-width: none;
+  }
+
+  .track::-webkit-scrollbar { display: none; }
+
+  .slide {
+    flex: 0 0 100%;
+    scroll-snap-align: start;
+  }
+
+  .dots {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    padding-top: 14px;
+  }
+
+  .dots span {
+    width: 6px;
+    height: 6px;
+    border-radius: 99px;
+    background: var(--cocoa-900);
+    opacity: .2;
+    transition: width 360ms var(--ease-spring), opacity 240ms var(--ease-out);
+  }
+
+  .dots .dotOn {
+    width: 20px;
+    opacity: 1;
+  }
+
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin: 10px 20px 0;
+    padding-top: 24px;
+  }
+
+  .facts li {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+    font-size: 13px;
+    line-height: 1.35;
+    text-wrap: balance;
+  }
+
+  .factIcon { box-shadow: var(--shadow-xs); }
+
+  .section {
+    padding: 88px 20px 0;
+  }
+
+  /* Ritual: snapshots zigzag down a dashed line. */
+  .ritualIntro {
+    font-size: 22px;
+  }
+
+  .ritualRow {
+    display: flex;
+    flex-direction: column;
+    gap: 64px;
+    max-width: none;
+    margin: 0;
+    padding: 24px 0 0;
+  }
+
+  .ritualRow::before {
+    top: 20px;
+    bottom: 40px;
+    opacity: .5;
+  }
+
+  .ritualCard {
+    width: 80%;
+    padding: 12px 12px 18px;
+  }
+
+  .ritualCard:nth-child(even) { margin-left: auto; }
+
+  .ritualNumber {
+    top: -48px;
+    left: -10px;
+    font-size: 92px;
+  }
+
+  .ritualCard:nth-child(even) .ritualNumber {
+    left: auto;
+    right: -6px;
+  }
+
+  .ritualTitle { padding-top: 14px; }
+
+  /* What's inside and other boxes: swipe rows that bleed to the screen edge. */
+  .contentsHead {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .contents,
+  .others {
+    display: flex;
+    gap: 12px;
+    margin: 0 -20px;
+    padding: 12px 20px 8px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding: 0 20px;
+    scrollbar-width: none;
+  }
+
+  .contents::-webkit-scrollbar,
+  .others::-webkit-scrollbar {
+    display: none;
+  }
+
+  .contents > * {
+    flex: 0 0 156px;
+    scroll-snap-align: start;
+  }
+
+  .others > * {
+    flex: 0 0 168px;
+    scroll-snap-align: start;
+    margin-top: 0 !important;
+  }
+
+  .itemName { font-size: 15px; }
+  .itemDescription { font-size: 13px; }
+
+  .goodToKnow { gap: 16px; }
+
+  .testimonial { padding: 28px; }
+  .testimonialBody { gap: 16px; }
+  .quote { font-size: 28px; }
+  .attribution { font-size: 14px; }
+
+  .othersSection { padding-top: 88px; }
+  .othersInner { padding-top: 40px; }
+  .othersTitle { margin-bottom: 8px; font-size: 26px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

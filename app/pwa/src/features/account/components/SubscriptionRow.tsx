@@ -90,9 +90,10 @@ export function SubscriptionRow({ subscription, box, onCadenceChange, onSkip, on
             / {CADENCE_COPY[cadence].unit} · {box.planNotes[cadence]}
           </span>
         </div>
-        <div className={styles.delivery}>
-          <DeliveryStatus subscription={subscription} />
-        </div>
+      </div>
+
+      <div className={styles.delivery}>
+        <DeliveryStatus subscription={subscription} />
       </div>
 
       <div className={styles.actions}>

@@ -1,7 +1,10 @@
 .row {
   display: grid;
   grid-template-columns: 120px minmax(0, 1fr) auto;
-  gap: 24px;
+  grid-template-areas:
+    "thumb details actions"
+    "thumb delivery actions";
+  gap: 10px 24px;
   align-items: center;
   padding: 16px 24px 16px 16px;
   border-radius: var(--radius-xl);
@@ -14,12 +17,15 @@
 }
 
 .thumb {
+  grid-area: thumb;
   display: block;
   padding: 6px;
   border-radius: var(--radius-lg);
 }
 
 .details {
+  grid-area: details;
+  align-self: end;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -58,6 +64,8 @@
 }
 
 .delivery {
+  grid-area: delivery;
+  align-self: start;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -75,6 +83,7 @@
 }
 
 .actions {
+  grid-area: actions;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -89,7 +98,43 @@
 }
 
 @media (max-width: 760px) {
-  .row { grid-template-columns: 88px minmax(0, 1fr); align-items: start; }
-  .actions { grid-column: 1 / -1; align-items: flex-start; }
+  .row {
+    grid-template-columns: 88px minmax(0, 1fr);
+    grid-template-areas:
+      "thumb details"
+      "delivery delivery"
+      "actions actions";
+    gap: 14px;
+    padding: 14px;
+  }
+
+  .details { align-self: center; gap: 6px; }
+  .actions { align-items: flex-start; }
   .buttons { justify-content: flex-start; }
+
+  /* The next delivery sits in its own tinted strip. */
+  .delivery {
+    padding: 12px 14px;
+    border-radius: var(--radius-md);
+    background: var(--surface-sunken);
+  }
+}
+
+@media (max-width: 640px) {
+  .row { grid-template-columns: 84px minmax(0, 1fr); }
+  .thumb { padding: 5px; }
+  .price { font-size: 20px; }
+  .plan { font-size: 13px; }
+
+  .actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .buttons {
+    gap: 2px;
+    margin-left: auto;
+  }
 }
