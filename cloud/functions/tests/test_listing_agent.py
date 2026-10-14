@@ -8,7 +8,7 @@ from pydantic_ai.models.function import FunctionModel
 from pydantic_ai.models.test import TestModel
 
 from modules.catalog.catalog import starter_boxes
-from modules.catalog.listing_agent import GeneratedListing, ListingAgent, ListingFailed, ListingIcon, _check_listing, _prompt
+from modules.catalog.listing_agent import GeneratedListing, ListingAgent, ListingFailed, ListingIcon, _check_listing, _prompt, _too_long
 from modules.catalog import handlers
 from modules.catalog.listing_agent import ListingNotConfigured
 from third_party.parallel.client import ParallelSearchClient
@@ -104,11 +104,21 @@ def test_works_without_search_when_no_parallel_key_is_set():
     assert result["sources"] == []
 
 
-def test_prompt_shows_the_voice_and_the_boxes_already_on_sale():
-    prompt = _prompt("pet care", starter_boxes())
+def test_prompt_shows_the_design_voice_and_the_boxes_already_on_sale():
+    on_sale = starter_boxes()[:1]
+    prompt = _prompt("pet care", on_sale)
     assert "The idea: pet care" in prompt
     assert "- Date night: For the two of you." in prompt
-    assert "One very good evening, on repeat." in prompt
+    assert "- Snack drawer" not in prompt  # only what's on sale counts as taken...
+    for box in starter_boxes():  # ...but all five design listings set the style
+        assert box.pitch in prompt
+
+
+def test_the_design_boxes_fit_the_word_limits():
+    # The limits come from these boxes; if one grows, raise its limit on purpose.
+    for box in starter_boxes():
+        listing = GeneratedListing(**box.model_dump(by_alias=True, exclude={"id", "testimonial", "image", "status", "sort_order", "created_at", "updated_at"}))
+        assert _too_long(listing) == [], box.name
 
 
 @pytest.mark.parametrize("idea", ["", "   ", "x" * 201])
@@ -133,6 +143,8 @@ def test_a_model_failure_becomes_a_friendly_error():
         ({"prices": {"week": 2900, "month": 1300}}, "weekly below monthly"),
         ({"prices": {"week": 13, "month": 29}}, "in pence"),
         ({"items": [{**item, "inWeeklyBox": True} for item in PET_CARE["items"]]}, "some, but not all"),
+        ({"pitch": "Everything your very good dog could ever possibly want, on repeat."}, "shorten pitch to 7 words"),
+        ({"contents": [{**PET_CARE["contents"][0], "description": "Long-lasting, single ingredient, sourced from British farms only"}, *PET_CARE["contents"][1:]]}, r"contents\[0\]\.description"),
     ],
 )
 def test_sends_the_model_back_to_fix_counts_and_prices(change, problem):

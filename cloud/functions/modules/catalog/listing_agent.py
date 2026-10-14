@@ -5,6 +5,11 @@ is set it can first research the idea on the web, a few searches at most. Nothin
 here saves anything: the draft fills the New box form, and the admin creates
 the box from there.
 
+The copy follows the design's five launch boxes (`starter_boxes.json`, the same copy
+as the design's `mk-data.js`): simple, sweet and short, and written to Hormozi's value
+equation, high dream outcome and likelihood, low time and effort. Word limits taken
+from those boxes keep it short; a draft over them goes back to the model.
+
 It never writes a testimonial. A made-up customer quote would read as a real review.
 """
 import json
@@ -16,7 +21,7 @@ from pydantic import Field
 from pydantic_ai import Agent, ModelRetry, RunContext
 
 from core import telemetry
-from modules.catalog.catalog import Box, Tone
+from modules.catalog.catalog import Box, Tone, starter_boxes
 from modules.shared.document import Document
 from modules.shared.errors import FailedPrecondition
 from third_party.parallel.client import ParallelSearchClient, SearchResult, digest
@@ -37,17 +42,20 @@ ListingIcon = Literal[
 
 class ListingFact(Document):
     icon: ListingIcon
-    label: str = Field(description="2–5 words, e.g. 'Made for two' or '6 treats in the full box'.")
+    label: str = Field(
+        description="Up to 6 words. One fact each: proof it's good ('Full-size, never samples'), how much you get "
+        "('6 treats in the full box') or how little it asks of you ('About one lovely hour')."
+    )
 
 
 class ListingStep(Document):
-    title: str = Field(description="A short imperative, e.g. 'Open it together'.")
-    body: str = Field(description="One or two short sentences.")
+    title: str = Field(description="Up to 4 words, an easy imperative, e.g. 'Open it together'.")
+    body: str = Field(description="Up to 16 words. Show it's quick and easy, e.g. 'Lid off, glasses out. The first prompt card is already waiting on top.'")
 
 
 class ListingContentsItem(Document):
-    name: str = Field(description="What customers see in the box, e.g. 'Hand-poured candle'.")
-    description: str = Field(description="A few words of detail, e.g. 'Lavender, jasmine, rosewood'.")
+    name: str = Field(description="Up to 4 words, what customers see in the box, e.g. 'Hand-poured candle'.")
+    description: str = Field(description="Up to 7 words: a specific, sensory detail or a wink, e.g. 'Hard to kill, promise'.")
     tone: Tone = Field(description="Pastel for the placeholder tile; pick one that suits the item.")
 
 
@@ -62,19 +70,24 @@ class ListingPrices(Document):
 
 
 class ListingPlanNotes(Document):
-    week: str = Field(description="What a weekly box holds, e.g. 'A mini date · 3 treats'.")
-    month: str = Field(description="What a monthly box holds, e.g. 'The full evening · 6 treats'.")
+    week: str = Field(description="Up to 8 words: a name for the smaller box, then the count, e.g. 'A mini date · 3 treats'.")
+    month: str = Field(description="Up to 8 words: the full box, then the count, e.g. 'The full evening · 6 treats'.")
 
 
 class GeneratedListing(Document):
     """Everything the New box form needs except the photo. Field names match the form."""
 
-    name: str = Field(description="1–3 words, sentence case, e.g. 'Date night'.")
-    audience: str = Field(description="Who it's for, starting 'For', e.g. 'For the two of you'.")
+    name: str = Field(description="1–3 words, sentence case, e.g. 'Snack drawer'.")
+    audience: str = Field(description="Up to 6 words starting 'For': a person or a moment, e.g. 'For the 4pm slump'.")
     tone: Tone
-    pitch: str = Field(description="The page headline: one short, warm line, e.g. 'One very good evening, on repeat.'")
-    story: str = Field(description="Two sentences under the headline: what's in it and the feeling it gives.")
-    shot_description: str = Field(description="Art direction for the hero photo: the key items, comma-separated.")
+    pitch: str = Field(
+        description="The headline, up to 7 words: the dream outcome, already done for you, e.g. 'The 4pm slump, solved.'"
+    )
+    story: str = Field(
+        description="Up to 30 words, two or three short sentences: the concrete things inside, the feeling, "
+        "and that we do the work, e.g. 'We pack the calm — you just have to open it.'"
+    )
+    shot_description: str = Field(description="Up to 10 words of art direction for the hero photo: the key items, comma-separated.")
     prices: ListingPrices
     plan_notes: ListingPlanNotes
     facts: list[ListingFact] = Field(description="3 or 4 highlights.")
@@ -95,13 +108,24 @@ INSTRUCTIONS = """\
 You write product listings for Bonbon, a UK subscription-box shop. Customers pick a
 box and get it weekly or monthly. Each box is a small, physical treat, packed by hand.
 
-Write in Bonbon's voice: warm, playful and brief. British English. Plain words, short
-sentences, no exclamation marks, no hype ("ultimate", "curated luxury", "elevate").
-Talk to the customer as "you".
+The voice: simple, sweet and short. Match the five listings you're given; they are the
+house style. British English, plain words, "you". No exclamation marks, no hype
+("ultimate", "curated", "elevate", "indulge"). Every word earns its place.
+
+Make the box obviously worth it, using Hormozi's value equation:
+value = (dream outcome × likelihood it happens) / (time it takes × effort it asks).
+- Dream outcome up: the pitch names the result the customer wants, as if it's done
+  ("A slower Sunday, delivered." "The 4pm slump, solved.").
+- Likelihood up: be specific. Real counts ("14 snacks in the full box"), concrete,
+  sensory details ("Fig and cedar, 40-hour burn"), full-size things, a reason it suits them.
+- Time down: it arrives at the door, ready the moment the lid's off. Rituals take minutes.
+- Effort down: we choose, pack and send everything; nothing to plan, buy or assemble.
+  Say so plainly ("We pack the calm — you just have to open it.").
 
 Rules:
 - Everything must be things we could really buy and pack in the UK. No brand names.
-- Make no claims you can't back up: nothing like "vet-approved", "organic" or "award-winning".
+- Specific, never invented: no made-up ratings, reviews, prices of contents, certifications
+  or claims like "vet-approved" or "award-winning".
 - Weekly boxes are a smaller version of the monthly box; price them like the examples.
 - Make the box clearly different from the boxes already on sale.
 """
@@ -177,7 +201,7 @@ class ListingAgent:
 
 
 def _check_listing(listing: GeneratedListing) -> GeneratedListing:
-    """Counts and prices the schema can't express. A failure sends the model back to fix it."""
+    """Counts, prices and lengths the schema can't express. A failure sends the model back to fix it."""
     problems = []
     if not 3 <= len(listing.facts) <= 4:
         problems.append("give 3 or 4 facts")
@@ -189,6 +213,7 @@ def _check_listing(listing: GeneratedListing) -> GeneratedListing:
         problems.append("give 4 to 8 packing items")
     elif not any(item.in_weekly_box for item in listing.items) or all(item.in_weekly_box for item in listing.items):
         problems.append("put some, but not all, packing items in the weekly box")
+    problems.extend(_too_long(listing))
     week, month = listing.prices.week, listing.prices.month
     if not (MIN_PRICE_PENCE <= week < month <= MAX_PRICE_PENCE):
         problems.append(f"prices must be in pence, between {MIN_PRICE_PENCE} and {MAX_PRICE_PENCE}, with weekly below monthly")
@@ -197,8 +222,39 @@ def _check_listing(listing: GeneratedListing) -> GeneratedListing:
     return listing
 
 
+# Word limits per field: the longest copy in the design's five boxes, plus a little slack.
+WORD_LIMITS = {
+    "name": 3, "audience": 6, "pitch": 7, "story": 30, "shot_description": 10, "plan_notes": 8,
+    "facts": 6, "ritual_title": 4, "ritual_body": 16, "contents_name": 4, "contents_description": 7,
+}  # fmt: skip
+
+
+def _too_long(listing: GeneratedListing) -> list[str]:
+    """One problem per field that runs over its word limit, quoting the offending text."""
+    fields: list[tuple[str, str, str]] = [
+        ("name", "name", listing.name),
+        ("audience", "audience", listing.audience),
+        ("pitch", "pitch", listing.pitch),
+        ("story", "story", listing.story),
+        ("shot_description", "shotDescription", listing.shot_description),
+        ("plan_notes", "planNotes.week", listing.plan_notes.week),
+        ("plan_notes", "planNotes.month", listing.plan_notes.month),
+        *(("facts", f"facts[{i}]", fact.label) for i, fact in enumerate(listing.facts)),
+        *(("ritual_title", f"ritual[{i}].title", step.title) for i, step in enumerate(listing.ritual)),
+        *(("ritual_body", f"ritual[{i}].body", step.body) for i, step in enumerate(listing.ritual)),
+        *(("contents_name", f"contents[{i}].name", item.name) for i, item in enumerate(listing.contents)),
+        *(("contents_description", f"contents[{i}].description", item.description) for i, item in enumerate(listing.contents)),
+    ]
+    return [
+        f"shorten {where} to {WORD_LIMITS[kind]} words or fewer (now: “{text}”)"
+        for kind, where, text in fields
+        if len(text.split()) > WORD_LIMITS[kind]
+    ]
+
+
 def _prompt(idea: str, catalog: list[Box]) -> str:
-    examples = [_example(box) for box in catalog if box.status == "active"][:2]
+    # Always the design's five boxes: the live catalog can drift from the house style.
+    examples = [_example(box) for box in starter_boxes()]
     others = [f"- {box.name}: {box.audience}. “{box.pitch}”" for box in catalog if box.status == "active"]
     return "\n".join(
         [
@@ -207,7 +263,7 @@ def _prompt(idea: str, catalog: list[Box]) -> str:
             "Boxes already on sale (don't repeat them):",
             *(others or ["- none yet"]),
             "",
-            "Listings in the house style, for tone and length:",
+            "The house style: match these listings' tone, structure and length.",
             json.dumps(examples, ensure_ascii=False, indent=1),
         ]
     )
