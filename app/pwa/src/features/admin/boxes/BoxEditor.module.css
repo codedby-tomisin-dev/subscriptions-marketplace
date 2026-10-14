@@ -107,3 +107,52 @@
 .rowFields > .narrow {
   flex: 0 0 150px;
 }
+
+/* "Generate a box" modal */
+
+.generate {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.examples {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.generateFooter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.generateFooter .note {
+  flex: 1 1 200px;
+  margin: 0;
+}
+
+.sources {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+}
+
+.sources a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  overflow-wrap: anywhere;
+}
+
+.sources svg {
+  flex: none;
+}

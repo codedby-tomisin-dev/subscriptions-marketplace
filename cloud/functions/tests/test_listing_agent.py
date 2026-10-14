@@ -1,0 +1,163 @@
+import re
+from pathlib import Path
+from typing import get_args
+
+import pytest
+from pydantic_ai import ModelRetry
+from pydantic_ai.models.function import FunctionModel
+from pydantic_ai.models.test import TestModel
+
+from modules.catalog.catalog import starter_boxes
+from modules.catalog.listing_agent import GeneratedListing, ListingAgent, ListingFailed, ListingIcon, _check_listing, _prompt
+from modules.catalog import handlers
+from modules.catalog.listing_agent import ListingNotConfigured
+from third_party.parallel.client import ParallelSearchClient
+
+ICONS_TS = Path(__file__).resolve().parents[3] / "app/pwa/src/features/catalog/icons.ts"
+
+PET_CARE = {
+    "name": "Pet care",
+    "audience": "For the dog who has everything",
+    "tone": "sage",
+    "pitch": "Good dog, on repeat.",
+    "story": "Chews, toys and a little something for you. Tails will wag.",
+    "shotDescription": "Rope toy, treat tin, bandana, brush",
+    "prices": {"week": 1300, "month": 2900},
+    "planNotes": {"week": "A quick treat · 2 goodies", "month": "The full pamper · 5 goodies"},
+    "facts": [
+        {"icon": "Heart", "label": "Made for dogs"},
+        {"icon": "PackageOpen", "label": "5 goodies in the full box"},
+        {"icon": "Leaf", "label": "Natural chews"},
+    ],
+    "ritual": [
+        {"title": "Sniff it out", "body": "Lid off. They'll find the treat tin first."},
+        {"title": "Play", "body": "The rope toy is for tug, not for the sofa."},
+        {"title": "Brush and settle", "body": "A gentle brush, then a long nap."},
+    ],
+    "contents": [
+        {"name": "Natural chews", "description": "Long-lasting, single ingredient", "tone": "apricot"},
+        {"name": "Rope toy", "description": "Built for tug", "tone": "sage"},
+        {"name": "Treat tin", "description": "Bite-size training treats", "tone": "cream"},
+        {"name": "Bandana", "description": "Cotton, one size", "tone": "blush"},
+    ],
+    "items": [
+        {"name": "Natural chews pack", "inWeeklyBox": True},
+        {"name": "Rope toy", "inWeeklyBox": False},
+        {"name": "Training treats tin", "inWeeklyBox": True},
+        {"name": "Cotton bandana", "inWeeklyBox": False},
+    ],
+}
+
+
+class FakeResponse:
+    def __init__(self, status: int, body: dict | None = None) -> None:
+        self.status_code = status
+        self._body = body or {}
+
+    def raise_for_status(self) -> None:
+        if self.status_code >= 400:
+            raise RuntimeError(f"HTTP {self.status_code}")
+
+    def json(self) -> dict:
+        return self._body
+
+
+def search_client(*responses: FakeResponse) -> tuple[ParallelSearchClient, list[dict]]:
+    calls: list[dict] = []
+    queue = list(responses)
+
+    def post(url: str, **kwargs):
+        calls.append(kwargs["json"])
+        return queue.pop(0) if queue else FakeResponse(200, {"results": []})
+
+    return ParallelSearchClient("key", post=post), calls
+
+
+DOG_RESULTS = {
+    "results": [
+        {"title": "Best dog toys", "url": "https://example.com/toys", "excerpts": ["Rope toys are a favourite."]},
+        {"title": "Dupe", "url": "https://example.com/toys", "excerpts": []},
+    ]
+}
+
+
+def test_drafts_the_whole_form_from_an_idea_after_researching_it():
+    search, calls = search_client(FakeResponse(200, DOG_RESULTS))
+    agent = ListingAgent(TestModel(call_tools=["web_search"], custom_output_args=PET_CARE), search)
+
+    result = agent.draft("  pet   care ", starter_boxes())
+
+    listing = result["listing"]
+    assert listing["name"] == "Pet care"
+    assert listing["prices"] == {"week": 1300, "month": 2900}
+    assert listing["items"][1] == {"name": "Rope toy", "inWeeklyBox": False}
+    # Never a made-up review, and the admin adds the photo.
+    assert listing["testimonial"] is None and listing["image"] is None and listing["status"] == "active"
+    assert len(calls) == 1
+    assert result["sources"] == [{"title": "Best dog toys", "url": "https://example.com/toys"}]
+
+
+def test_works_without_search_when_no_parallel_key_is_set():
+    agent = ListingAgent(TestModel(custom_output_args=PET_CARE), ParallelSearchClient(""))
+    result = agent.draft("pet care", starter_boxes())
+    assert result["listing"]["name"] == "Pet care"
+    assert result["sources"] == []
+
+
+def test_prompt_shows_the_voice_and_the_boxes_already_on_sale():
+    prompt = _prompt("pet care", starter_boxes())
+    assert "The idea: pet care" in prompt
+    assert "- Date night: For the two of you." in prompt
+    assert "One very good evening, on repeat." in prompt
+
+
+@pytest.mark.parametrize("idea", ["", "   ", "x" * 201])
+def test_rejects_an_empty_or_rambling_idea(idea):
+    with pytest.raises(ValueError):
+        ListingAgent(TestModel(custom_output_args=PET_CARE)).draft(idea, [])
+
+
+def test_a_model_failure_becomes_a_friendly_error():
+    def broken(messages, info):
+        raise RuntimeError("upstream 500")
+
+    with pytest.raises(ListingFailed, match="Try again"):
+        ListingAgent(FunctionModel(broken)).draft("pet care", [])
+
+
+@pytest.mark.parametrize(
+    "change, problem",
+    [
+        ({"ritual": PET_CARE["ritual"][:2]}, "exactly 3 ritual steps"),
+        ({"facts": PET_CARE["facts"][:1]}, "3 or 4 facts"),
+        ({"prices": {"week": 2900, "month": 1300}}, "weekly below monthly"),
+        ({"prices": {"week": 13, "month": 29}}, "in pence"),
+        ({"items": [{**item, "inWeeklyBox": True} for item in PET_CARE["items"]]}, "some, but not all"),
+    ],
+)
+def test_sends_the_model_back_to_fix_counts_and_prices(change, problem):
+    with pytest.raises(ModelRetry, match=problem):
+        _check_listing(GeneratedListing(**{**PET_CARE, **change}))
+
+
+def test_icons_match_the_storefront():
+    names = re.search(r"BOX_ICONS: Record<string, LucideIcon> = \{(.*?)\};", ICONS_TS.read_text(), re.S).group(1)
+    assert sorted(re.findall(r"\w+", names)) == sorted(get_args(ListingIcon))
+
+
+def test_search_client_gives_up_quietly(monkeypatch):
+    monkeypatch.setattr("third_party.parallel.client.BACKOFF_SECONDS", 0)
+    assert ParallelSearchClient("").search("dogs") == []
+    rate_limited, calls = search_client(*[FakeResponse(429)] * 3)
+    assert rate_limited.search("dogs") == [] and len(calls) == 3
+
+    def explode(url, **kwargs):
+        raise TimeoutError
+
+    assert ParallelSearchClient("key", post=explode).search("dogs") == []
+
+
+def test_no_openai_key_says_how_to_set_it_up(monkeypatch):
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    with pytest.raises(ListingNotConfigured, match="OPENAI_API_KEY"):
+        handlers.build_listing_agent()

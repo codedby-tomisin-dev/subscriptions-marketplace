@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Pencil, Plus, TriangleAlert } from "lucide-react";
+import { Check, Pencil, Plus, Sparkles, TriangleAlert } from "lucide-react";
 import { Badge, Button, ProductImage } from "@/components/ui";
 import { useCatalog } from "@/features/catalog";
 import { toneSurface } from "@/shared/types";
@@ -18,6 +18,9 @@ export function StockContainer() {
   return (
     <>
       <AdminPageHeader title="Boxes & stock" subtitle="What’s going into the next round of boxes, and whether we have enough of it.">
+        <Button size="sm" variant="secondary" iconLeft={Sparkles} href="/admin/boxes/new?generate=1">
+          Generate with AI
+        </Button>
         <Button size="sm" iconLeft={Plus} href="/admin/boxes/new">
           New box
         </Button>

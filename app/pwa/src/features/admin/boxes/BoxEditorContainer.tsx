@@ -1,12 +1,14 @@
 "use client";
 
-import { useRef, type ChangeEvent, type FormEvent } from "react";
-import { Archive, ArrowLeft, ArchiveRestore, ImageUp, Save, X } from "lucide-react";
+import { useRef, useState, type ChangeEvent, type FormEvent } from "react";
+import { Archive, ArrowLeft, ArchiveRestore, ExternalLink, ImageUp, Save, Sparkles, X } from "lucide-react";
 import { Badge, Button, Checkbox, Input, ProductImage, Select, TextArea } from "@/components/ui";
 import { BOX_ICON_NAMES, BoxIcon, type BoxItem } from "@/features/catalog";
 import { toneSurface } from "@/shared/types";
 import { AdminPageHeader, AdminPanel, ReportState } from "../shared";
+import type { ListingSource } from "./api";
 import { TONES, type BoxDraft } from "./boxDraft";
+import { GenerateListingDialog } from "./GenerateListingDialog";
 import { RowList } from "./RowList";
 import { useBoxEditor } from "./useBoxEditor";
 import styles from "./BoxEditor.module.css";
@@ -14,8 +16,15 @@ import styles from "./BoxEditor.module.css";
 const ICON_OPTIONS = BOX_ICON_NAMES.map((name) => ({ value: name, label: name.replace(/([a-z])([A-Z0-9])/g, "$1 $2") }));
 const MAX_FACTS = 4;
 
-export function BoxEditorContainer({ boxId }: { boxId: string | null }) {
+interface BoxEditorContainerProps {
+  boxId: string | null;
+  /** Open the "Generate a box" modal straight away (from Boxes & stock). */
+  startGenerating?: boolean;
+}
+
+export function BoxEditorContainer({ boxId, startGenerating = false }: BoxEditorContainerProps) {
   const editor = useBoxEditor(boxId);
+  const [isGenerateOpen, setIsGenerateOpen] = useState(startGenerating && !boxId);
 
   if (editor.notFound) return <ReportState error="There’s no box with that id." />;
   if (!editor.draft) return <ReportState error={null} />;
@@ -26,31 +35,46 @@ export function BoxEditorContainer({ boxId }: { boxId: string | null }) {
   };
 
   return (
-    <form onSubmit={submit}>
-      <AdminPageHeader
-        title={boxId ? editor.draft.name || "Untitled box" : "New box"}
-        subtitle={boxId ? "Changes show on the storefront within a minute." : "Everything the box page shows, plus what goes in it."}
-      >
-        <Button variant="ghost" size="sm" iconLeft={ArrowLeft} href="/admin/stock">
-          Boxes & stock
-        </Button>
-        {editor.existing && (
-          <Button
-            variant="secondary"
-            size="sm"
-            iconLeft={editor.existing.status === "active" ? Archive : ArchiveRestore}
-            onClick={editor.toggleArchived}
-          >
-            {editor.existing.status === "active" ? "Archive" : "Put back on sale"}
+    <>
+      <form onSubmit={submit}>
+        <AdminPageHeader
+          title={boxId ? editor.draft.name || "Untitled box" : "New box"}
+          subtitle={boxId ? "Changes show on the storefront within a minute." : "Everything the box page shows, plus what goes in it."}
+        >
+          <Button variant="ghost" size="sm" iconLeft={ArrowLeft} href="/admin/stock">
+            Boxes & stock
           </Button>
-        )}
-        <Button type="submit" size="sm" iconLeft={Save} loading={editor.isSaving}>
-          {boxId ? "Save changes" : "Create box"}
-        </Button>
-      </AdminPageHeader>
+          {editor.existing && (
+            <Button
+              variant="secondary"
+              size="sm"
+              iconLeft={editor.existing.status === "active" ? Archive : ArchiveRestore}
+              onClick={editor.toggleArchived}
+            >
+              {editor.existing.status === "active" ? "Archive" : "Put back on sale"}
+            </Button>
+          )}
+          {!boxId && (
+            <Button variant="secondary" size="sm" iconLeft={Sparkles} onClick={() => setIsGenerateOpen(true)}>
+              Generate with AI
+            </Button>
+          )}
+          <Button type="submit" size="sm" iconLeft={Save} loading={editor.isSaving}>
+            {boxId ? "Save changes" : "Create box"}
+          </Button>
+        </AdminPageHeader>
 
-      <BoxEditorFields draft={editor.draft} update={editor.update} onPhoto={editor.uploadPhoto} isUploading={editor.isUploading} />
-    </form>
+        <BoxEditorFields
+          draft={editor.draft}
+          update={editor.update}
+          onPhoto={editor.uploadPhoto}
+          isUploading={editor.isUploading}
+          sources={editor.sources}
+        />
+      </form>
+      {/* Outside the form: React submit events bubble through portals, and this one mustn't save the box. */}
+      <GenerateListingDialog open={isGenerateOpen} onClose={() => setIsGenerateOpen(false)} onGenerated={editor.applyListing} />
+    </>
   );
 }
 
@@ -59,9 +83,11 @@ interface FieldsProps {
   update: (patch: Partial<BoxDraft>) => void;
   onPhoto: (file: File) => void;
   isUploading: boolean;
+  /** Pages the listing agent read for the current draft. */
+  sources: ListingSource[];
 }
 
-function BoxEditorFields({ draft, update, onPhoto, isUploading }: FieldsProps) {
+function BoxEditorFields({ draft, update, onPhoto, isUploading, sources }: FieldsProps) {
   const fileInput = useRef<HTMLInputElement>(null);
   const pickPhoto = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -218,6 +244,21 @@ function BoxEditorFields({ draft, update, onPhoto, isUploading }: FieldsProps) {
             />
           </div>
         </AdminPanel>
+        {sources.length > 0 && (
+          <AdminPanel title="Research">
+            <p className={styles.note}>Pages the draft was based on. Check any facts against them.</p>
+            <ul className={styles.sources}>
+              {sources.map((source) => (
+                <li key={source.url}>
+                  <a href={source.url} target="_blank" rel="noreferrer">
+                    {source.title}
+                    <ExternalLink size={13} aria-hidden />
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </AdminPanel>
+        )}
         <AdminPanel title="Status">
           {draft.status === "active" ? (
             <Badge tone="sage">On sale</Badge>

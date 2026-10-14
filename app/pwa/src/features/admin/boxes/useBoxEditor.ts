@@ -3,8 +3,8 @@ import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui";
 import { useCatalog } from "@/features/catalog";
 import { describeError } from "@/shared/api";
-import { saveBox, setBoxStatus, uploadBoxPhoto } from "./api";
-import { draftFromBox, emptyDraft, payloadFromDraft, type BoxDraft } from "./boxDraft";
+import { saveBox, setBoxStatus, uploadBoxPhoto, type GeneratedListing, type ListingSource } from "./api";
+import { draftFromBox, draftFromListing, emptyDraft, payloadFromDraft, type BoxDraft } from "./boxDraft";
 
 /** Form state and actions for creating (`boxId` null) or editing a box. */
 export function useBoxEditor(boxId: string | null) {
@@ -16,6 +16,8 @@ export function useBoxEditor(boxId: string | null) {
   const [draft, setDraft] = useState<BoxDraft | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  // Where the last drafted listing's research came from, shown beside the form.
+  const [sources, setSources] = useState<ListingSource[]>([]);
 
   const loadedDraft = draft ?? (isLoading ? null : existing ? draftFromBox(existing) : boxId ? null : emptyDraft(boxes.length));
 
@@ -79,8 +81,18 @@ export function useBoxEditor(boxId: string | null) {
     [update, showToast],
   );
 
+  const applyListing = useCallback(
+    (listing: GeneratedListing, listingSources: ListingSource[]) => {
+      setDraft((current) => draftFromListing(listing, current ?? loadedDraft!));
+      setSources(listingSources);
+    },
+    [loadedDraft],
+  );
+
   return {
     draft: loadedDraft,
+    applyListing,
+    sources,
     existing,
     notFound: !isLoading && !!boxId && !existing,
     isDirty: draft !== null,

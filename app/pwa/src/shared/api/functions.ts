@@ -2,9 +2,9 @@ import { FirebaseError } from "firebase/app";
 import { httpsCallable } from "firebase/functions";
 import { cloudFunctions } from "./firebase";
 
-/** Calls a Cloud Function (`on_call`) by name and returns its result. */
-export async function callFunction<Request, Response>(name: string, data: Request): Promise<Response> {
-  const result = await httpsCallable<Request, Response>(cloudFunctions(), name)(data);
+/** Calls a Cloud Function (`on_call`) by name and returns its result. `timeoutMs` defaults to the SDK's 70s. */
+export async function callFunction<Request, Response>(name: string, data: Request, timeoutMs?: number): Promise<Response> {
+  const result = await httpsCallable<Request, Response>(cloudFunctions(), name, timeoutMs ? { timeout: timeoutMs } : undefined)(data);
   return result.data;
 }
 

@@ -17,6 +17,20 @@ export const saveBox = (box: BoxPayload) => callFunction<{ box: BoxPayload }, Sa
 export const setBoxStatus = (boxId: string, status: BoxStatus) =>
   callFunction<{ boxId: string; status: BoxStatus }, { ok: boolean }>("admin_set_box_status", { boxId, status });
 
+/** A drafted listing: the form's fields with prices in pence, but no id, photo or testimonial. */
+export type GeneratedListing = Omit<BoxPayload, "id" | "sortOrder">;
+
+export interface ListingSource {
+  title: string;
+  url: string;
+}
+
+/** Research plus writing takes up to a minute or two; the function allows three. */
+const GENERATE_TIMEOUT_MS = 180_000;
+
+export const generateListing = (idea: string) =>
+  callFunction<{ idea: string }, { listing: GeneratedListing; sources: ListingSource[] }>("admin_generate_box_listing", { idea }, GENERATE_TIMEOUT_MS);
+
 const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
 
 /** Uploads a box photo to Storage (admins only, per storage.rules) and returns its public URL. */

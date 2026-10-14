@@ -19,5 +19,19 @@ def stripe_webhook_secret() -> str:
     return os.getenv("STRIPE_WEBHOOK_SECRET", "")
 
 
+def openai_api_key() -> str:
+    return os.getenv("OPENAI_API_KEY", "")
+
+
+def listing_model() -> str:
+    """The OpenAI model that drafts box listings in the admin."""
+    return os.getenv("OPENAI_LISTING_MODEL") or "gpt-5.6-luna"
+
+
+def parallel_search_api_key() -> str:
+    """Parallel.ai web search, used by the listing agent to research an idea. Optional."""
+    return os.getenv("PARALLEL_SEARCH_API_KEY", "")
+
+
 def is_emulator() -> bool:
     return os.getenv("FUNCTIONS_EMULATOR") == "true"

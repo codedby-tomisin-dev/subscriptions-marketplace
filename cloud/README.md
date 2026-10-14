@@ -45,6 +45,13 @@ Boxes live in Firestore (`boxes/{id}`) and are edited in the admin under **Boxes
 
 Archiving takes a box off the storefront; existing subscriptions carry on. Photos upload to Storage under `boxes/`, which only admins can write (`storage.rules`). Storefront pages revalidate every minute, so edits appear within about a minute.
 
+**Generate with AI:** on Boxes & stock (or the New box page), type an idea such as "pet care" and an agent drafts the whole listing: name, story, prices, packing items, highlights, the ritual and what's inside. It researches the idea on the web first, then fills the New box form; nothing is saved until you click **Create box**. It never writes a testimonial, since a made-up quote would read as a real review. It runs on PydanticAI with OpenAI (`modules/catalog/listing_agent.py`) and needs keys in `functions/.env`:
+```
+OPENAI_API_KEY=sk-...
+PARALLEL_SEARCH_API_KEY=...        # optional: without it, the agent drafts without researching
+OPENAI_LISTING_MODEL=gpt-5.6-luna  # optional override
+```
+
 **Fresh project:** load the five starter boxes once with `venv/bin/python scripts/seed_catalog.py --live --project subscription-business-511510`. It skips boxes that already exist. `scripts/seed_stripe.py` creates their Stripe prices; boxes made in the admin sync their own.
 
 ## How billing works
@@ -61,7 +68,7 @@ functions/
   core/            config (.env values/params), telemetry (Logfire), firestore client
   modules/
     shared/        handler decorators (traced_*), Document base, clock, errors
-    catalog/       boxes in Firestore, editing (admin_save_box), Stripe price sync; starter_boxes.json
+    catalog/       boxes in Firestore, editing (admin_save_box), Stripe price sync, the listing agent; starter_boxes.json
     subscriptions/ schedule + lifecycle (pure), repository, service, manage_subscription
     billing/       Stripe gateway, checkout, webhook, refunds
     customers/     customer docs and their subscription summary
@@ -69,6 +76,8 @@ functions/
     inventory/     stock vs next round, reorders
     analytics/     overview, churn, nightly snapshot
   scripts/         seed_firestore, seed_stripe, grant_admin
+third_party/
+  parallel/        Parallel.ai web search client (never raises; no key means no results)
   tests/           pytest; emulator-backed tests skip without FIRESTORE_EMULATOR_HOST
 firestore.rules    customers read their own docs, admins read everything, nobody writes
 rules-tests/       rules tests against the emulator

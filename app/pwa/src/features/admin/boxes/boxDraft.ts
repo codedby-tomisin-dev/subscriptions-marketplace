@@ -1,6 +1,6 @@
 import type { Box, BoxFact, BoxItem, BoxStatus, Cadence, RitualStep } from "@/features/catalog";
 import type { SurfaceTone } from "@/shared/types";
-import type { BoxPayload } from "./api";
+import type { BoxPayload, GeneratedListing } from "./api";
 
 /** The editor's form state. Prices are edited as pounds text ("19" or "18.50"). */
 export interface BoxDraft {
@@ -61,6 +61,19 @@ export function draftFromBox(box: Box): BoxDraft {
     prices: { week: toPounds(box.prices.week), month: toPounds(box.prices.month) },
     testimonial: box.testimonial ?? { quote: "", attribution: "" },
     items: box.items.map((item) => ({ ...item })),
+  };
+}
+
+/** A drafted listing as form state. Keeps the photo and position already in the form. */
+export function draftFromListing(listing: GeneratedListing, current: BoxDraft): BoxDraft {
+  return {
+    ...current,
+    ...listing,
+    image: current.image,
+    prices: { week: toPounds(listing.prices.week), month: toPounds(listing.prices.month) },
+    testimonial: { quote: "", attribution: "" },
+    items: listing.items.map((item) => ({ name: item.name, inWeeklyBox: item.inWeeklyBox })),
+    status: current.status,
   };
 }
 
