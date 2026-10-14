@@ -1,6 +1,13 @@
 import type { SurfaceTone } from "@/shared/types";
 
+/** How often a subscription delivers. */
 export type Cadence = "week" | "month";
+
+/** How a box can be bought: a subscription cadence, or a single box. Chosen per box in the admin. */
+export type PurchaseOption = Cadence | "once";
+
+/** Every purchase option, in display order. */
+export const PURCHASE_OPTIONS: readonly PurchaseOption[] = ["week", "month", "once"];
 
 export interface BoxFact {
   /** A name from BOX_ICONS, e.g. "Heart". */
@@ -30,6 +37,15 @@ export interface BoxInventoryItem {
   costPence?: number | null;
 }
 
+/** The ways a box is on sale, in display order. */
+export const boxOptions = (box: Pick<Box, "prices">): PurchaseOption[] => PURCHASE_OPTIONS.filter((option) => box.prices[option] !== undefined);
+
+/** The cheapest way in, for "from £x" on tiles. */
+export function lowestPrice(box: Pick<Box, "prices">): { option: PurchaseOption; pence: number } {
+  const [option] = boxOptions(box).sort((a, b) => box.prices[a]! - box.prices[b]!);
+  return { option, pence: box.prices[option]! };
+}
+
 /** The picture that stands for a box in tiles and thumbnails: its illustration, else its photo. */
 export const boxArt = (box: Pick<Box, "illustration" | "image">) => box.illustration ?? box.image;
 
@@ -48,10 +64,10 @@ export interface Box {
   audience: string;
   /** Art-direction note shown on the placeholder until photography exists. */
   shotDescription: string;
-  /** In pence. What new subscribers pay; existing subscriptions keep their own price. */
-  prices: Record<Cadence, number>;
-  /** What each cadence includes, e.g. "A mini date · 3 treats". */
-  planNotes: Record<Cadence, string>;
+  /** In pence, for each way the box is on sale. What new customers pay; existing subscriptions keep their own price. */
+  prices: Partial<Record<PurchaseOption, number>>;
+  /** What each option includes, e.g. "A mini date · 3 treats". */
+  planNotes: Partial<Record<PurchaseOption, string>>;
   pitch: string;
   story: string;
   facts: BoxFact[];

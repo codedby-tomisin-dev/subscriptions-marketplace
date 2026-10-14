@@ -4,7 +4,7 @@ import { ArrowUpRight } from "lucide-react";
 import { Badge, ProductImage } from "@/components/ui";
 import { toneSurface } from "@/shared/types";
 import { formatPrice } from "@/shared/utils";
-import { boxArt, type Box } from "../types";
+import { boxArt, lowestPrice, type Box } from "../types";
 import styles from "./BoxTile.module.css";
 
 interface BoxTileProps {
@@ -49,7 +49,7 @@ export function BoxTile({ box, index, offset = 0, featured = false }: BoxTilePro
           <span className={styles.audience}>{box.audience}</span>
         </span>
         <span className={styles.price}>
-          <small>from</small>{formatPrice(box.prices.week)}
+          <small>from</small>{formatPrice(lowestPrice(box).pence)}
         </span>
       </div>
     </Link>

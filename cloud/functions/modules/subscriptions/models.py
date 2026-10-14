@@ -58,6 +58,7 @@ EventType = Literal[
     "payment_failed",
     "refunded",
     "order_delivered",
+    "one_off_bought",
 ]
 
 

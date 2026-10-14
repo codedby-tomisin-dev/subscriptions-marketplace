@@ -1,9 +1,13 @@
 """The box catalog as the backend sees it. Boxes live in Firestore (`boxes/{id}`),
 edited from the admin; `starter_boxes.json` seeds a fresh project.
 
-Stripe prices are found by lookup key (`snacks_week`, ...). Saving a new price
-in the admin creates a new Stripe price and moves the lookup key to it, so new
-subscribers pay the new price while existing ones keep theirs.
+Each box is sold any of three ways, chosen per box in the admin: weekly or monthly
+subscriptions (`Cadence`), or a one-off box. `Box.prices` holds a price only for
+the ways it's on sale.
+
+Stripe prices are found by lookup key (`snacks_week`, `snacks_once`, ...). Saving a
+new price in the admin creates a new Stripe price and moves the lookup key to it, so
+new subscribers pay the new price while existing ones keep theirs.
 """
 import json
 from pathlib import Path
@@ -15,6 +19,10 @@ from modules.shared.document import Document
 
 Cadence = Literal["week", "month"]
 CADENCES: tuple[Cadence, ...] = get_args(Cadence)
+# How a box can be bought: a subscription cadence, or once.
+PurchaseOption = Literal["week", "month", "once"]
+PURCHASE_OPTIONS: tuple[PurchaseOption, ...] = get_args(PurchaseOption)
+ONE_OFF: PurchaseOption = "once"
 Tone = Literal["blush", "apricot", "sage", "plum", "lilac", "cream"]
 BoxStatus = Literal["active", "archived"]
 
@@ -26,8 +34,8 @@ WEEKS_PER_MONTH = 52 / 12
 STARTER_BOXES = Path(__file__).with_name("starter_boxes.json")
 
 
-def price_lookup_key(box_id: str, cadence: Cadence) -> str:
-    return f"{box_id}_{cadence}"
+def price_lookup_key(box_id: str, option: PurchaseOption) -> str:
+    return f"{box_id}_{option}"
 
 
 def monthly_value_pence(price_pence: int, cadence: Cadence) -> int:
@@ -39,6 +47,15 @@ def parse_cadence(value: object) -> Cadence:
     if value not in CADENCES:
         raise ValueError(f"Cadence must be one of {', '.join(CADENCES)}")
     return value  # type: ignore[return-value]
+
+
+def parse_purchase_option(value: object) -> PurchaseOption:
+    if value not in PURCHASE_OPTIONS:
+        raise ValueError(f"Choose one of {', '.join(PURCHASE_OPTIONS)}")
+    return value  # type: ignore[return-value]
+
+
+OPTION_NAMES: dict[PurchaseOption, str] = {"week": "weekly", "month": "monthly", "once": "one-off"}
 
 
 class Fact(Document):
@@ -85,8 +102,9 @@ class Box(Document):
     illustration: str | None = None
     # A real photo, uploaded by hand; the box page's gallery leads with it.
     image: str | None = None
-    prices: dict[Cadence, int]
-    plan_notes: dict[Cadence, str]
+    # Only the ways it's on sale have a price (see `options`).
+    prices: dict[PurchaseOption, int]
+    plan_notes: dict[PurchaseOption, str]
     pitch: str
     story: str
     facts: list[Fact] = Field(default_factory=list)
@@ -99,13 +117,23 @@ class Box(Document):
     created_at: str | None = None
     updated_at: str | None = None
 
-    def price_lookup_key(self, cadence: Cadence) -> str:
-        return price_lookup_key(self.id, cadence)
+    @property
+    def options(self) -> list[PurchaseOption]:
+        """The ways this box is on sale, in display order."""
+        return [option for option in PURCHASE_OPTIONS if option in self.prices]
 
-    def items_for(self, cadence: Cadence) -> list[InventoryItem]:
-        return self.items if cadence == "month" else [item for item in self.items if item.in_weekly_box]
+    def offers(self, option: PurchaseOption) -> bool:
+        return option in self.prices
+
+    def price_lookup_key(self, option: PurchaseOption) -> str:
+        return price_lookup_key(self.id, option)
+
+    def items_for(self, option: PurchaseOption) -> list[InventoryItem]:
+        """Weekly boxes hold the ticked items; monthly and one-off boxes hold everything."""
+        return [item for item in self.items if item.in_weekly_box] if option == "week" else self.items
 
     def monthly_value_pence(self, cadence: Cadence) -> int:
+        """Raises KeyError if the box isn't sold at this cadence."""
         return monthly_value_pence(self.prices[cadence], cadence)
 
 

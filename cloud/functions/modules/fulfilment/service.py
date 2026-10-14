@@ -68,17 +68,18 @@ class FulfilmentService:
 
     def _record_deliveries(self, orders: list[Order]) -> None:
         for order in orders:
+            event = Event(
+                customer_id=order.customer_id,
+                subscription_id=order.subscription_id,
+                type="order_delivered",
+                actor="system",
+                data={"boxId": order.box_id, "orderId": order.id},
+                at=timestamp(),
+            )
+            if order.subscription_id is None:  # a one-off box
+                self._subscriptions.add_event(event)
+                continue
             subscription = self._subscriptions.get(order.subscription_id)
             if subscription.packed_delivery == order.delivery_date:
                 subscription = subscription.model_copy(update={"packed_delivery": None})
-            self._subscriptions.save_with_event(
-                subscription,
-                Event(
-                    customer_id=order.customer_id,
-                    subscription_id=order.subscription_id,
-                    type="order_delivered",
-                    actor="system",
-                    data={"boxId": order.box_id, "orderId": order.id},
-                    at=timestamp(),
-                ),
-            )
+            self._subscriptions.save_with_event(subscription, event)

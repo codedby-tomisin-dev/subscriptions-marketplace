@@ -2,7 +2,7 @@ from datetime import date
 
 import pytest
 
-from modules.billing.gateway import CheckoutCompleted, InvoiceFailed, InvoicePaid, SubscriptionEnded
+from modules.billing.gateway import CheckoutCompleted, InvoiceFailed, InvoicePaid, OneOffPaid, SubscriptionEnded
 from modules.billing.repository import BillingRepository
 from modules.billing.service import BillingService
 from modules.catalog.catalog import Catalog, starter_boxes
@@ -21,11 +21,23 @@ def gateway():
     return FakeGateway()
 
 
+def catalog_with_one_offs() -> Catalog:
+    """The starter boxes, plus snacks sold one-off too and date night sold only one-off."""
+    boxes = []
+    for box in starter_boxes():
+        if box.id == "snacks":
+            box = box.model_copy(update={"prices": {**box.prices, "once": 2500}, "plan_notes": {**box.plan_notes, "once": "The full drawer, once"}})
+        if box.id == "datenight":
+            box = box.model_copy(update={"prices": {"once": 4500}, "plan_notes": {"once": "One perfect evening"}})
+        boxes.append(box)
+    return Catalog(boxes)
+
+
 @pytest.fixture
 def services(db, gateway):
     customers = CustomersRepository(db)
     subscriptions = SubscriptionsRepository(db, customers)
-    catalog = Catalog(starter_boxes())
+    catalog = catalog_with_one_offs()
     billing = BillingService(
         gateway=lambda: gateway,
         catalog=lambda: catalog,
@@ -37,10 +49,10 @@ def services(db, gateway):
     return billing, SubscriptionService(subscriptions, lambda: gateway, lambda: catalog), db
 
 
-def checkout(billing: BillingService, gateway: FakeGateway, box_id="snacks", cadence="week", first="2026-10-15") -> str:
+def checkout(billing: BillingService, gateway: FakeGateway, box_id="snacks", option="week", first="2026-10-15") -> str:
     """Starts checkout and simulates Stripe creating the subscription. Returns our subscription id."""
     billing.start_checkout(
-        uid="maya", email="maya@example.com", box_id=box_id, cadence=cadence,
+        uid="maya", email="maya@example.com", box_id=box_id, option=option,
         first_delivery=date.fromisoformat(first), is_gift=False, today=TODAY, app_url="http://app",
     )
     request = next(call[1] for call in gateway.calls if call[0] == "checkout")
@@ -61,7 +73,7 @@ def test_checkout_prices_from_the_catalog_and_rejects_unknown_dates(services, ga
 
     with pytest.raises(ValueError):
         billing.start_checkout(
-            uid="maya", email="maya@example.com", box_id="snacks", cadence="week",
+            uid="maya", email="maya@example.com", box_id="snacks", option="week",
             first_delivery=date(2026, 10, 13), is_gift=False, today=TODAY, app_url="http://app",
         )
 
@@ -191,3 +203,76 @@ def test_refund_marks_order_and_payment_and_reduces_lifetime_value(services, gat
     assert doc(db, f"subscriptions/{subscription_id}")["packedDelivery"] is None
     with pytest.raises(FailedPrecondition):
         billing.refund_order(order_id="BB-20450", actor="ops")
+
+
+def buy_once(billing: BillingService, gateway: FakeGateway, box_id="snacks", gift=False) -> OneOffPaid:
+    """Starts a one-off checkout and returns the webhook Stripe would send once it's paid."""
+    billing.start_checkout(
+        uid="maya", email="maya@example.com", box_id=box_id, option="once",
+        first_delivery=date(2026, 10, 16), is_gift=gift, today=TODAY, app_url="http://app",
+    )
+    request = [call[1] for call in gateway.calls if call[0] == "checkout"][-1]
+    assert request.mode == "payment"
+    assert request.price_lookup_key == f"{box_id}_once"
+    assert request.success_url == f"http://app/boxes/{box_id}?bought=2026-10-16"
+    return OneOffPaid("cs_1", "maya", "cus_maya", "pi_1", 2500, request.metadata, None)
+
+
+def test_a_one_off_box_becomes_one_order_with_no_subscription(services, gateway):
+    billing, _, db = services
+    paid = buy_once(billing, gateway, gift=True)
+    billing.handle_event(paid, TODAY)
+    billing.handle_event(paid, TODAY)  # Stripe retries
+
+    orders = [order.to_dict() for order in db.collection("orders").stream()]
+    assert len(orders) == 1
+    order = orders[0]
+    assert order["cadence"] == "once" and order["subscriptionId"] is None and order["isGift"] is True
+    assert order["deliveryDate"] == "2026-10-16" and order["shipDate"] == "2026-10-15"
+    # A one-off box is the full box, like monthly.
+    assert len(order["items"]) == len(next(box for box in starter_boxes() if box.id == "snacks").items)
+    assert order["stripePaymentIntentId"] == "pi_1"
+    assert doc(db, "payments/pi_1")["status"] == "paid"
+    assert doc(db, "customers/maya")["ltvPence"] == 2500
+    assert list(db.collection("subscriptions").stream()) == []
+    assert [event.to_dict()["type"] for event in db.collection("events").stream()] == ["one_off_bought"]
+
+
+def test_refunding_a_one_off_box_refunds_its_payment(services, gateway):
+    billing, _, db = services
+    billing.handle_event(buy_once(billing, gateway), TODAY)
+
+    billing.refund_order(order_id="BB-20450", actor="ops")
+    assert ("refund_payment", "pi_1") in gateway.calls
+    assert doc(db, "orders/BB-20450")["status"] == "refunded"
+    assert doc(db, "payments/pi_1")["status"] == "refunded"
+    assert doc(db, "customers/maya")["ltvPence"] == 0
+
+
+def test_only_the_ways_a_box_is_sold_can_be_bought(services, gateway):
+    billing, subscriptions, _ = services
+    buy_once(billing, gateway, box_id="datenight")
+    with pytest.raises(FailedPrecondition, match="isn’t sold weekly"):
+        checkout(billing, gateway, box_id="datenight")
+    with pytest.raises(FailedPrecondition, match="isn’t sold one-off"):
+        billing.start_checkout(
+            uid="maya", email="maya@example.com", box_id="selfcare", option="once",
+            first_delivery=date(2026, 10, 16), is_gift=False, today=TODAY, app_url="http://app",
+        )
+
+
+def test_subscribers_cant_switch_to_a_cadence_no_longer_sold(db, gateway):
+    customers = CustomersRepository(db)
+    subscriptions = SubscriptionsRepository(db, customers)
+    boxes = Catalog(starter_boxes())
+    billing = BillingService(
+        gateway=lambda: gateway, catalog=lambda: boxes, customers=customers, subscriptions=subscriptions,
+        orders=OrdersRepository(db), billing=BillingRepository(db),
+    )
+    subscription_id = checkout(billing, gateway)
+    billing.handle_event(InvoicePaid("in_1", "sub_1", 1200), TODAY)
+    snacks = boxes.get("snacks")
+    weekly_only = Catalog([snacks.model_copy(update={"prices": {"week": 1200}, "plan_notes": {"week": "x"}})])
+    service = SubscriptionService(subscriptions, lambda: gateway, lambda: weekly_only)
+    with pytest.raises(FailedPrecondition, match="isn’t sold monthly"):
+        service.manage(subscription_id=subscription_id, action="change_cadence", params={"cadence": "month"}, actor="maya", is_admin=False, today=TODAY)

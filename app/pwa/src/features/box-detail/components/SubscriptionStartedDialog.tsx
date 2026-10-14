@@ -57,7 +57,7 @@ export function SubscriptionStartedDialog({ box, isWaiting, subscription, onClos
           <div className={styles.text}>
             <b className={styles.name}>{box.name}</b>
             <span className={styles.price}>
-              {formatPrice(subscription.pricePence ?? box.prices[subscription.cadence])} / {copy.unit}
+              {formatPrice(subscription.pricePence ?? box.prices[subscription.cadence] ?? 0)} / {copy.unit}
               {subscription.isGift && " · gift"}
             </span>
           </div>

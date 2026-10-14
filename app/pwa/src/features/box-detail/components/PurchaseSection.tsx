@@ -1,16 +1,20 @@
 import { useId, type Ref } from "react";
-import { Repeat, X } from "lucide-react";
+import { PackageCheck, Repeat, X } from "lucide-react";
 import { Button, IconButton, ProductImage, Sheet, Switch, Tag } from "@/components/ui";
 import { PartnerLogos, Stars, STORE_RATING } from "@/components/trust";
-import { boxArt, CADENCE_COPY, type Box, type Cadence } from "@/features/catalog";
+import { boxArt, isCadence, PURCHASE_COPY, type Box, type PurchaseOption } from "@/features/catalog";
 import { toneSurface } from "@/shared/types";
 import { formatDay, formatPrice } from "@/shared/utils";
 import { CadenceOption } from "./CadenceOption";
 import styles from "./PurchaseSection.module.css";
 
+const CADENCE_SHORT = { week: "wk", month: "mo" } as const;
+
 export interface PurchaseChoices {
-  cadence: Cadence;
-  onCadenceChange: (cadence: Cadence) => void;
+  /** The ways this box is on sale. */
+  options: PurchaseOption[];
+  option: PurchaseOption;
+  onOptionChange: (option: PurchaseOption) => void;
   deliveryDates: string[];
   firstDelivery: string;
   onFirstDeliveryChange: (date: string) => void;
@@ -61,8 +65,9 @@ export function PurchasePanel({
   box,
   headingId,
   onClose,
-  cadence,
-  onCadenceChange,
+  options,
+  option,
+  onOptionChange,
   deliveryDates,
   firstDelivery,
   onFirstDeliveryChange,
@@ -71,7 +76,8 @@ export function PurchasePanel({
   onStart,
   isStarting,
 }: PurchasePanelProps) {
-  const copy = CADENCE_COPY[cadence];
+  const isSubscription = isCadence(option);
+  const price = formatPrice(box.prices[option] ?? 0);
   const cadenceLabelId = useId();
   const dateLabelId = useId();
 
@@ -96,32 +102,30 @@ export function PurchasePanel({
         </div>
         {onClose && <IconButton icon={X} label="Close" variant="secondary" onClick={onClose} />}
       </div>
-      <div className={styles.field}>
-        <span id={cadenceLabelId} className={styles.fieldLabel}>
-          How often?
-        </span>
-        <div role="radiogroup" aria-labelledby={cadenceLabelId} className={styles.cadences}>
-          <CadenceOption
-            selected={cadence === "week"}
-            onSelect={() => onCadenceChange("week")}
-            title="Weekly"
-            price={box.prices.week}
-            unit="week"
-          />
-          <CadenceOption
-            selected={cadence === "month"}
-            onSelect={() => onCadenceChange("month")}
-            title="Monthly"
-            price={box.prices.month}
-            unit="month"
-            badge="Most loved"
-          />
+      {options.length > 1 && (
+        <div className={styles.field}>
+          <span id={cadenceLabelId} className={styles.fieldLabel}>
+            {options.includes("once") ? "How would you like it?" : "How often?"}
+          </span>
+          <div role="radiogroup" aria-labelledby={cadenceLabelId} className={styles.cadences} data-count={options.length}>
+            {options.map((each) => (
+              <CadenceOption
+                key={each}
+                selected={option === each}
+                onSelect={() => onOptionChange(each)}
+                title={PURCHASE_COPY[each].title}
+                price={box.prices[each] ?? 0}
+                unit={PURCHASE_COPY[each].unit}
+                badge={each === "month" ? "Most loved" : undefined}
+              />
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       <div className={styles.field}>
         <span id={dateLabelId} className={styles.fieldLabel}>
-          First box arrives
+          {isSubscription ? "First box arrives" : "It arrives"}
         </span>
         <div role="group" aria-labelledby={dateLabelId} className={styles.dates}>
           {deliveryDates.map((date) => (
@@ -136,11 +140,20 @@ export function PurchasePanel({
 
       <div className={styles.checkout}>
         <Button size="lg" variant="accent" fullWidth onClick={onStart} loading={isStarting}>
-          Start my subscription · {formatPrice(box.prices[cadence])}/{copy.short}
+          {isSubscription ? `Start my subscription · ${price}/${CADENCE_SHORT[option]}` : `Buy it once · ${price}`}
         </Button>
         <div className={styles.cancelNote}>
-          <Repeat size={15} aria-hidden />
-          Skip, pause or cancel anytime in two taps
+          {isSubscription ? (
+            <>
+              <Repeat size={15} aria-hidden />
+              Skip, pause or cancel anytime in two taps
+            </>
+          ) : (
+            <>
+              <PackageCheck size={15} aria-hidden />
+              One box, no subscription, nothing to cancel
+            </>
+          )}
         </div>
         <div className={styles.trust}>
           <PartnerLogos center />

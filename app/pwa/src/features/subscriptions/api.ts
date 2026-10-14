@@ -1,5 +1,5 @@
 import { collection, onSnapshot, query, where } from "firebase/firestore";
-import type { Cadence } from "@/features/catalog";
+import type { PurchaseOption } from "@/features/catalog";
 import { callFunction, firestore } from "@/shared/api";
 import type { Subscription, SubscriptionAction } from "./types";
 
@@ -28,7 +28,8 @@ export async function manageSubscription(subscriptionId: string, change: Subscri
 
 export interface CheckoutInput {
   boxId: string;
-  cadence: Cadence;
+  /** "once" buys a single box with no subscription. */
+  cadence: PurchaseOption;
   firstDelivery: string;
   isGift: boolean;
 }

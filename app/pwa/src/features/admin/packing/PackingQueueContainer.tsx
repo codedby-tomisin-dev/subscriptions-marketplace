@@ -3,6 +3,7 @@
 import clsx from "clsx";
 import { PackageCheck, Printer, Search, Tag, Truck } from "lucide-react";
 import { Button, Checkbox, Input, Tabs } from "@/components/ui";
+import { PURCHASE_COPY } from "@/features/catalog";
 import { AdminBadge, AdminPageHeader, AdminPanel, adminStyles as admin, BoxDot, formatShipDay } from "../shared";
 import { PACKING_STAGES, usePackingQueue } from "./usePackingQueue";
 import styles from "./PackingQueue.module.css";
@@ -96,7 +97,7 @@ export function PackingQueueContainer() {
                     <td>
                       <BoxDot boxId={order.boxId} />
                     </td>
-                    <td>{order.cadence === "week" ? "Weekly" : "Monthly"}</td>
+                    <td>{PURCHASE_COPY[order.cadence].label}</td>
                     <td>{order.city || "—"}</td>
                     <td>
                       <AdminBadge status={order.status} />

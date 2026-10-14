@@ -3,6 +3,9 @@
 Webhooks can arrive in any order and more than once. Every handler first makes
 sure our subscription exists (building it from the Stripe subscription's
 metadata if needed), and a paid invoice is recorded at most once, keyed by its id.
+
+A one-off box is a single Checkout payment with no subscription: the completed
+session creates its order straight away, recorded at most once by payment intent.
 """
 from datetime import date
 from typing import Callable
@@ -16,10 +19,11 @@ from modules.billing.gateway import (
     CheckoutRequest,
     InvoiceFailed,
     InvoicePaid,
+    OneOffPaid,
     SubscriptionEnded,
 )
 from modules.billing.repository import BillingRepository
-from modules.catalog.catalog import Cadence, Catalog
+from modules.catalog.catalog import ONE_OFF, OPTION_NAMES, Cadence, Catalog, PurchaseOption
 from modules.customers.models import Customer, ShippingAddress
 from modules.customers.repository import CustomersRepository
 from modules.fulfilment.models import Order, Payment
@@ -59,17 +63,33 @@ class BillingService:
     # --- Checkout -------------------------------------------------------------------
 
     def start_checkout(
-        self, *, uid: str, email: str, box_id: str, cadence: Cadence, first_delivery: date, is_gift: bool, today: date, app_url: str
+        self, *, uid: str, email: str, box_id: str, option: PurchaseOption, first_delivery: date, is_gift: bool, today: date, app_url: str
     ) -> str:
         """Returns the Stripe Checkout URL. The price comes from the catalog, never the client."""
         box = self._catalog().get(box_id)
         if box.status != "active":
             raise FailedPrecondition(f"{box.name} isn’t available any more.")
+        if not box.offers(option):
+            raise FailedPrecondition(f"The {box.name.lower()} box isn’t sold {OPTION_NAMES[option]} any more.")
         if first_delivery not in upcoming_delivery_dates(today):
             raise ValueError("Pick one of the delivery dates shown.")
 
         gateway = self._gateway()
         customer = self._ensure_customer(uid, email, today, gateway)
+        if option == ONE_OFF:
+            return gateway.create_checkout_session(
+                CheckoutRequest(
+                    stripe_customer_id=customer.stripe_customer_id or "",
+                    price_lookup_key=box.price_lookup_key(ONE_OFF),
+                    success_url=f"{app_url}/boxes/{box.id}?bought={first_delivery.isoformat()}",
+                    cancel_url=f"{app_url}/boxes/{box.id}",
+                    uid=uid,
+                    metadata={"uid": uid, "boxId": box.id, "delivery": first_delivery.isoformat(), "isGift": "true" if is_gift else "false"},
+                    mode="payment",
+                )
+            )
+
+        cadence: Cadence = option  # type: ignore[assignment]
         draft = Subscription(
             id=self._subscriptions.new_id(),
             customer_id=uid,
@@ -117,6 +137,9 @@ class BillingService:
             case CheckoutCompleted():
                 self._save_shipping(event.uid, event.shipping)
                 self._ensure_subscription(event.stripe_subscription_id, today)
+            case OneOffPaid():
+                self._save_shipping(event.uid, event.shipping)
+                self._record_one_off_paid(event, today)
             case InvoicePaid():
                 self._record_invoice_paid(event, today)
             case InvoiceFailed():
@@ -244,6 +267,48 @@ class BillingService:
         gateway.set_next_charge(paid.stripe_subscription_id, charge_time(date.fromisoformat(advanced.next_delivery or "")))
         telemetry.event("order_created", order_id=order.id, subscription_id=subscription.id)
 
+    def _record_one_off_paid(self, paid: OneOffPaid, today: date) -> None:
+        box = self._catalog().get(paid.metadata["boxId"])
+        delivery = date.fromisoformat(paid.metadata["delivery"])
+        customer = self._customers.find(paid.uid)
+        now = timestamp()
+
+        def build_order(number: str) -> Order:
+            return Order(
+                id=number,
+                customer_id=paid.uid,
+                customer_name=(customer.name if customer else None) or "",
+                city=(customer.city if customer else None) or "",
+                box_id=box.id,
+                cadence=ONE_OFF,
+                is_gift=paid.metadata.get("isGift") == "true",
+                items=[item.name for item in box.items_for(ONE_OFF)],
+                delivery_date=delivery.isoformat(),
+                ship_date=ship_date_for(delivery).isoformat(),
+                price_pence=paid.amount_pence,
+                stripe_payment_intent_id=paid.payment_intent_id,
+                placed_on=today.isoformat(),
+                created_at=now,
+                updated_at=now,
+            )
+
+        order = self._billing.record_paid_order(
+            payment_id=paid.payment_intent_id,
+            customer_id=paid.uid,
+            amount_pence=paid.amount_pence,
+            subscription=None,
+            build_order=build_order,
+            event=Event(
+                customer_id=paid.uid,
+                type="one_off_bought",
+                actor=paid.uid,
+                data={"boxId": box.id, "amountPence": paid.amount_pence, "delivery": delivery.isoformat()},
+                at=now,
+            ),
+        )
+        if order is not None:
+            telemetry.event("order_created", order_id=order.id, box_id=box.id, one_off=True)
+
     def _record_invoice_failed(self, failed: InvoiceFailed, today: date) -> None:
         subscription = self._ensure_subscription(failed.stripe_subscription_id, today)
         existing = self._billing.find_payment(failed.invoice_id)
@@ -299,28 +364,33 @@ class BillingService:
         order = self._orders.get(order_id)
         if not can_move(order.status, "refunded"):
             raise FailedPrecondition(f"{order.id} has already been refunded.")
+        payment_id = order.stripe_invoice_id or order.stripe_payment_intent_id
         if order.stripe_invoice_id:
             self._gateway().refund_invoice(order.stripe_invoice_id)
-            payment = self._billing.find_payment(order.stripe_invoice_id)
-            if payment:
-                self._billing.save_payment(payment.model_copy(update={"status": "refunded", "updated_at": timestamp()}))
+        elif order.stripe_payment_intent_id:
+            self._gateway().refund_payment(order.stripe_payment_intent_id)
+        payment = self._billing.find_payment(payment_id) if payment_id else None
+        if payment:
+            self._billing.save_payment(payment.model_copy(update={"status": "refunded", "updated_at": timestamp()}))
         self._orders.set_statuses([order], "refunded")
         self._customers.add_to_lifetime_value(order.customer_id, -order.price_pence)
+
+        event = Event(
+            customer_id=order.customer_id,
+            subscription_id=order.subscription_id,
+            type="refunded",
+            actor=actor,
+            data={"boxId": order.box_id, "orderId": order.id, "amountPence": order.price_pence},
+            at=timestamp(),
+        )
+        if order.subscription_id is None:  # a one-off box
+            self._subscriptions.add_event(event)
+            return order.model_copy(update={"status": "refunded"})
 
         subscription = self._subscriptions.get(order.subscription_id)
         # An unshipped box won't be sent now, so it's no longer "on its way".
         unshipped = order.status in ("topack", "packed", "labelled")
         if unshipped and subscription.packed_delivery == order.delivery_date:
             subscription = subscription.model_copy(update={"packed_delivery": None, "final_delivery": None})
-        self._subscriptions.save_with_event(
-            subscription,
-            Event(
-                customer_id=order.customer_id,
-                subscription_id=order.subscription_id,
-                type="refunded",
-                actor=actor,
-                data={"boxId": order.box_id, "orderId": order.id, "amountPence": order.price_pence},
-                at=timestamp(),
-            ),
-        )
+        self._subscriptions.save_with_event(subscription, event)
         return order.model_copy(update={"status": "refunded"})

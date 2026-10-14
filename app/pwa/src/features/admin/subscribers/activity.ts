@@ -1,4 +1,4 @@
-import { CircleX, CreditCard, PackageCheck, Pause, Play, ReceiptText, Repeat, RotateCcw, SkipForward, Sparkles, type LucideIcon } from "lucide-react";
+import { CircleX, CreditCard, PackageCheck, Pause, Play, ReceiptText, Repeat, RotateCcw, ShoppingBag, SkipForward, Sparkles, type LucideIcon } from "lucide-react";
 import { formatPrice, formatShortDate } from "@/shared/utils";
 import type { ActivityEvent } from "./api";
 
@@ -32,6 +32,8 @@ export function describeActivity(event: ActivityEvent, boxName: (boxId: string) 
       return { icon: CreditCard, text: `Payment of ${amount} failed` };
     case "refunded":
       return { icon: ReceiptText, text: `Refunded ${event.data.orderId} · ${amount}` };
+    case "one_off_bought":
+      return { icon: ShoppingBag, text: `Bought a one-off ${box} box · ${amount}` };
     case "order_delivered":
       return { icon: PackageCheck, text: `${box} delivered` };
     default:

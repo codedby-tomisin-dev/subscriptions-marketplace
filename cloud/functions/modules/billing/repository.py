@@ -36,8 +36,28 @@ class BillingRepository:
         """In one transaction: number and create the order, mark the invoice paid, advance the
         subscription, log the event and add to lifetime value. Returns None if the invoice was
         already recorded, which is what makes webhook retries safe."""
+        return self.record_paid_order(
+            payment_id=invoice_id,
+            customer_id=subscription.customer_id,
+            amount_pence=amount_pence,
+            subscription=subscription,
+            build_order=build_order,
+            event=event,
+        )
+
+    def record_paid_order(
+        self,
+        *,
+        payment_id: str,
+        customer_id: str,
+        amount_pence: int,
+        subscription: Subscription | None,
+        build_order: Callable[[str], Order],
+        event: Event,
+    ) -> Order | None:
+        """`record_invoice_paid` for any payment; a one-off box has no subscription to advance."""
         db = self._db
-        payment_ref = db.collection(PAYMENTS).document(invoice_id)
+        payment_ref = db.collection(PAYMENTS).document(payment_id)
         counter_ref = db.collection(ORDER_COUNTER[0]).document(ORDER_COUNTER[1])
 
         @firestore.transactional
@@ -51,9 +71,9 @@ class BillingRepository:
             now = timestamp()
             order = build_order(order_number(sequence))
             payment = Payment(
-                id=invoice_id,
-                customer_id=subscription.customer_id,
-                subscription_id=subscription.id,
+                id=payment_id,
+                customer_id=customer_id,
+                subscription_id=subscription.id if subscription else None,
                 order_id=order.id,
                 amount_pence=amount_pence,
                 status="paid",
@@ -64,10 +84,11 @@ class BillingRepository:
             transaction.set(counter_ref, {"next": sequence + 1})
             transaction.set(db.collection(ORDERS).document(order.id), order.to_firestore())
             transaction.set(payment_ref, payment.to_firestore())
-            transaction.set(db.collection("subscriptions").document(subscription.id), {**subscription.to_firestore(), "updatedAt": now})
+            if subscription:
+                transaction.set(db.collection("subscriptions").document(subscription.id), {**subscription.to_firestore(), "updatedAt": now})
             transaction.set(db.collection("events").document(), event.to_firestore())
             transaction.set(
-                db.collection("customers").document(subscription.customer_id),
+                db.collection("customers").document(customer_id),
                 {"ltvPence": Increment(amount_pence), "updatedAt": now},
                 merge=True,
             )

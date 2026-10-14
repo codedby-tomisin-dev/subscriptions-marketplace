@@ -85,7 +85,7 @@ export function SubscriptionRow({ subscription, box, onCadenceChange, onSkip, on
           <StatusBadge status={subscription.status} />
         </div>
         <div className={styles.priceLine}>
-          <span className={styles.price}>{formatPrice(subscription.pricePence ?? box.prices[cadence])}</span>
+          <span className={styles.price}>{formatPrice(subscription.pricePence ?? box.prices[cadence] ?? 0)}</span>
           <span className={styles.plan}>
             / {CADENCE_COPY[cadence].unit} · {box.planNotes[cadence]}
           </span>

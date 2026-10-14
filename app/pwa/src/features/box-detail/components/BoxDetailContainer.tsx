@@ -27,8 +27,9 @@ export function BoxDetailContainer({ box, otherBoxes }: { box: Box; otherBoxes: 
 
   const scrollToPurchase = () => scrollToElement(purchaseRef.current, PURCHASE_SCROLL_OFFSET);
   const choices: PurchaseChoices = {
-    cadence: purchase.cadence,
-    onCadenceChange: purchase.setCadence,
+    options: purchase.options,
+    option: purchase.option,
+    onOptionChange: purchase.setOption,
     deliveryDates: purchase.deliveryDates,
     firstDelivery: purchase.firstDelivery,
     onFirstDeliveryChange: purchase.setFirstDelivery,
@@ -46,7 +47,7 @@ export function BoxDetailContainer({ box, otherBoxes }: { box: Box; otherBoxes: 
           <BoxGallery box={box} />
           <RitualSection box={box} />
           <ContentsSection box={box} />
-          <GoodToKnowSection box={box} cadence={purchase.cadence} />
+          <GoodToKnowSection box={box} option={purchase.option} />
           <TestimonialSection box={box} />
         </div>
         <PurchaseSection ref={purchaseRef} box={box} {...choices} />
@@ -55,6 +56,7 @@ export function BoxDetailContainer({ box, otherBoxes }: { box: Box; otherBoxes: 
       <StickyBuyBar
         box={box}
         isPhone={isPhone}
+        options={purchase.options}
         visible={isPhone || showStickyBar}
         onAction={isPhone ? () => setIsPlanSheetOpen(true) : scrollToPurchase}
       />

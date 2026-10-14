@@ -5,11 +5,11 @@ so tests swap in a fake and nothing else needs to know Stripe's object shapes.
 """
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Protocol
+from typing import Literal, Protocol
 
 import stripe
 
-from modules.catalog.catalog import CURRENCY
+from modules.catalog.catalog import CURRENCY, ONE_OFF, price_lookup_key
 
 
 
@@ -40,6 +40,19 @@ class CheckoutCompleted:
 
 
 @dataclass(frozen=True)
+class OneOffPaid:
+    """A one-off box paid through Checkout (payment mode). Its payment intent keys our records."""
+
+    session_id: str
+    uid: str
+    stripe_customer_id: str
+    payment_intent_id: str
+    amount_pence: int
+    metadata: dict[str, str]
+    shipping: Address | None
+
+
+@dataclass(frozen=True)
 class InvoicePaid:
     invoice_id: str
     stripe_subscription_id: str
@@ -65,7 +78,7 @@ class IgnoredEvent:
     type: str
 
 
-BillingEvent = CheckoutCompleted | InvoicePaid | InvoiceFailed | SubscriptionEnded | IgnoredEvent
+BillingEvent = CheckoutCompleted | OneOffPaid | InvoicePaid | InvoiceFailed | SubscriptionEnded | IgnoredEvent
 
 
 @dataclass(frozen=True)
@@ -75,8 +88,10 @@ class CheckoutRequest:
     success_url: str
     cancel_url: str
     uid: str
-    # Copied onto the Stripe subscription, so webhooks can build our record from it.
+    # Copied onto the Stripe subscription (or the one-off payment), so webhooks can build our record from it.
     metadata: dict[str, str] = field(default_factory=dict)
+    # "payment" for a one-off box: one charge, no subscription.
+    mode: Literal["subscription", "payment"] = "subscription"
 
 
 class BillingGateway(Protocol):
@@ -97,6 +112,8 @@ class BillingGateway(Protocol):
     ) -> str: ...
 
     def refund_invoice(self, invoice_id: str) -> None: ...
+
+    def refund_payment(self, payment_intent_id: str) -> None: ...
 
     def sync_box_prices(self, box_id: str, name: str, prices_pence: dict[str, int]) -> list[str]: ...
 
@@ -149,21 +166,23 @@ class StripeGateway:
         return customer.id
 
     def create_checkout_session(self, request: CheckoutRequest) -> str:
-        session = self._client.v1.checkout.sessions.create(
-            params={
-                "mode": "subscription",
-                "customer": request.stripe_customer_id,
-                "client_reference_id": request.uid,
-                "line_items": [{"price": self._price_id(request.price_lookup_key), "quantity": 1}],
-                "shipping_address_collection": {"allowed_countries": ["GB"]},
-                # Saves the shipping address on the Stripe customer, so webhooks can read it in any order.
-                "customer_update": {"shipping": "auto", "name": "auto"},
-                "subscription_data": {"metadata": request.metadata},
-                "metadata": request.metadata,
-                "success_url": request.success_url,
-                "cancel_url": request.cancel_url,
-            }
-        )
+        params = {
+            "mode": request.mode,
+            "customer": request.stripe_customer_id,
+            "client_reference_id": request.uid,
+            "line_items": [{"price": self._price_id(request.price_lookup_key), "quantity": 1}],
+            "shipping_address_collection": {"allowed_countries": ["GB"]},
+            # Saves the shipping address on the Stripe customer, so webhooks can read it in any order.
+            "customer_update": {"shipping": "auto", "name": "auto"},
+            "metadata": request.metadata,
+            "success_url": request.success_url,
+            "cancel_url": request.cancel_url,
+        }
+        if request.mode == "subscription":
+            params["subscription_data"] = {"metadata": request.metadata}
+        else:
+            params["payment_intent_data"] = {"metadata": request.metadata}
+        session = self._client.v1.checkout.sessions.create(params=params)
         if not session.url:
             raise RuntimeError("Stripe returned a checkout session without a URL")
         return session.url
@@ -221,8 +240,11 @@ class StripeGateway:
             raise LookupError("No card payment found for this order")
         self._client.v1.refunds.create(params={"payment_intent": intent if isinstance(intent, str) else intent.id})
 
+    def refund_payment(self, payment_intent_id: str) -> None:
+        self._client.v1.refunds.create(params={"payment_intent": payment_intent_id})
+
     def sync_box_prices(self, box_id: str, name: str, prices_pence: dict[str, int]) -> list[str]:
-        """Makes the box's Stripe product and lookup-keyed prices match. Returns the cadences that got a new price.
+        """Makes the box's Stripe product and lookup-keyed prices match. Returns the options that got a new price.
 
         Stripe prices can't be edited, so a changed amount is a new price that takes over
         the lookup key. Existing subscriptions stay on the price they were created with.
@@ -234,22 +256,22 @@ class StripeGateway:
             self._client.v1.products.create(params={"id": product_id, "name": f"{name} box"})
 
         changed = []
-        for cadence, amount in prices_pence.items():
-            lookup_key = f"{box_id}_{cadence}"
+        for option, amount in prices_pence.items():
+            lookup_key = price_lookup_key(box_id, option)  # type: ignore[arg-type]
             current = self._client.v1.prices.list(params={"lookup_keys": [lookup_key], "active": True, "limit": 1}).data
             if current and current[0].unit_amount == amount and current[0].currency == CURRENCY:
                 continue
-            self._client.v1.prices.create(
-                params={
-                    "product": product_id,
-                    "currency": CURRENCY,
-                    "unit_amount": amount,
-                    "recurring": {"interval": cadence},
-                    "lookup_key": lookup_key,
-                    "transfer_lookup_key": True,
-                }
-            )
-            changed.append(cadence)
+            params = {
+                "product": product_id,
+                "currency": CURRENCY,
+                "unit_amount": amount,
+                "lookup_key": lookup_key,
+                "transfer_lookup_key": True,
+            }
+            if option != ONE_OFF:
+                params["recurring"] = {"interval": option}
+            self._client.v1.prices.create(params=params)
+            changed.append(option)
         return changed
 
     def parse_webhook(self, payload: bytes, signature: str | None) -> BillingEvent:
@@ -266,6 +288,18 @@ class StripeGateway:
                     uid=obj["client_reference_id"],
                     stripe_customer_id=obj["customer"],
                     stripe_subscription_id=obj["subscription"],
+                    shipping=_address(details.get("name"), details.get("address")),
+                )
+            case "checkout.session.completed" if obj.get("mode") == "payment" and obj.get("payment_status") == "paid":
+                details = (obj.get("collected_information") or {}).get("shipping_details") or {}
+                intent = obj.get("payment_intent")
+                return OneOffPaid(
+                    session_id=obj["id"],
+                    uid=obj["client_reference_id"],
+                    stripe_customer_id=obj["customer"],
+                    payment_intent_id=intent if isinstance(intent, str) else (intent or {}).get("id", ""),
+                    amount_pence=obj.get("amount_total") or 0,
+                    metadata=obj.get("metadata") or {},
                     shipping=_address(details.get("name"), details.get("address")),
                 )
             case "invoice.paid" if _invoice_subscription_id(obj) and obj["amount_paid"] > 0:

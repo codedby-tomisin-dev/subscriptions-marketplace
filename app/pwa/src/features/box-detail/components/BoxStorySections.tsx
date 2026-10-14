@@ -1,7 +1,7 @@
 import type { CSSProperties } from "react";
 import { Quote } from "lucide-react";
 import { Card, ProductImage } from "@/components/ui";
-import { BoxTile, type Box, type Cadence } from "@/features/catalog";
+import { BoxTile, isCadence, type Box, type PurchaseOption } from "@/features/catalog";
 import { InfoAccordion } from "./InfoAccordion";
 import styles from "./BoxDetail.module.css";
 
@@ -64,39 +64,44 @@ export function ContentsSection({ box }: { box: Box }) {
   );
 }
 
-function goodToKnow(box: Box, cadence: Cadence) {
+const DELIVERY_RHYTHM: Record<PurchaseOption, string> = {
+  week: "Weekly boxes arrive on the same weekday each week. Change the day anytime.",
+  month: "Monthly boxes arrive around the same date each month. Change the day anytime.",
+  once: "It arrives on the day you pick, and that’s it: nothing else is charged or sent.",
+};
+
+function goodToKnow(box: Box, option: PurchaseOption) {
+  const changing = isCadence(option)
+    ? {
+        title: "Changing or cancelling",
+        body: "Switch between weekly and monthly, skip a delivery or cancel from your account. Changes made 3 days before shipping apply to the next box.",
+      }
+    : { title: "No subscription", body: "A one-off box is just that. Loved it? You can subscribe from this page anytime." };
   return [
     {
       title: "What’s in it",
-      body: `${box.planNotes[cadence]}. Each box is a mix of the things above — curated, never random, and always full-size.`,
+      body: `${box.planNotes[option] ?? ""}. Each box is a mix of the things above — curated, never random, and always full-size.`,
     },
     {
       title: "Delivery",
-      body: `Free tracked delivery in 2–3 days. ${
-        cadence === "week"
-          ? "Weekly boxes arrive on the same weekday each week."
-          : "Monthly boxes arrive around the same date each month."
-      } Change the day anytime.`,
+      body: `Free tracked delivery in 2–3 days. ${DELIVERY_RHYTHM[option]}`,
     },
     {
       title: "Gifting",
       body: "Flip “It’s a gift” and we’ll hide the price and tuck in a handwritten card.",
     },
-    {
-      title: "Changing or cancelling",
-      body: "Switch between weekly and monthly, skip a delivery or cancel from your account. Changes made 3 days before shipping apply to the next box.",
-    },
+    changing,
   ];
 }
 
-/** FAQ that follows the rhythm picked in the buy panel. */
-export function GoodToKnowSection({ box, cadence }: { box: Box; cadence: Cadence }) {
+/** FAQ that follows the option picked in the buy panel. */
+export function GoodToKnowSection({ box, option }: { box: Box; option: PurchaseOption }) {
   return (
     <section className={`${styles.section} ${styles.goodToKnow}`}>
       <h2 className="bb-heading" style={{ font: "var(--type-h2)" }}>
         Good to know.
       </h2>
-      <InfoAccordion items={goodToKnow(box, cadence)} />
+      <InfoAccordion items={goodToKnow(box, option)} />
     </section>
   );
 }

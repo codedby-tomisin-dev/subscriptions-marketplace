@@ -25,6 +25,7 @@ export function OrderRow({ order, box }: { order: Order; box: Box }) {
         <span className={styles.name}>{box.name}</span>
         <span className={styles.number}>
           {order.id} · placed {formatShortDate(order.placedOn)}
+          {order.cadence === "once" && " · one-off"}
         </span>
       </div>
       <div className={styles.status}>

@@ -1,6 +1,6 @@
 from typing import Literal
 
-from modules.catalog.catalog import Cadence
+from modules.catalog.catalog import PurchaseOption
 from modules.shared.document import Document
 
 OrderStatus = Literal["topack", "packed", "labelled", "shipped", "delivered", "refunded"]
@@ -8,15 +8,16 @@ OrderStatus = Literal["topack", "packed", "labelled", "shipped", "delivered", "r
 
 class Order(Document):
     """`orders/{number}`, e.g. `orders/BB-20441`. Customer name and city are copied in
-    so the packing queue reads one collection."""
+    so the packing queue reads one collection. One-off orders have no subscription."""
 
     id: str
     customer_id: str
     customer_name: str
     city: str
-    subscription_id: str
+    subscription_id: str | None = None
     box_id: str
-    cadence: Cadence
+    # "once" for a one-off box.
+    cadence: PurchaseOption
     is_gift: bool = False
     # What goes in the box, from the catalog recipe at the time it was charged.
     items: list[str] = []
@@ -25,6 +26,8 @@ class Order(Document):
     status: OrderStatus = "topack"
     price_pence: int
     stripe_invoice_id: str | None = None
+    # One-off orders are paid through Checkout directly, not an invoice; refunds go through this.
+    stripe_payment_intent_id: str | None = None
     placed_on: str
     created_at: str
     updated_at: str
@@ -34,11 +37,12 @@ PaymentStatus = Literal["paid", "failed", "refunded"]
 
 
 class Payment(Document):
-    """`payments/{stripeInvoiceId}`. Its existence (as paid) is what makes invoice.paid idempotent."""
+    """`payments/{stripeInvoiceId}`, or `payments/{checkoutSessionId}` for a one-off box.
+    Its existence (as paid) is what makes the payment webhooks idempotent."""
 
     id: str
     customer_id: str
-    subscription_id: str
+    subscription_id: str | None = None
     order_id: str | None = None
     amount_pence: int
     status: PaymentStatus

@@ -177,7 +177,6 @@
 /* Plans, items and profit: one table, read across */
 
 .planTable {
-  --plan-cols: minmax(160px, 1fr) 112px 120px 120px 32px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -242,12 +241,15 @@
 }
 
 @media (max-width: 640px) {
-  .planTable { --plan-cols: minmax(0, 1fr) 80px 52px 32px; }
-  .planMonthly { display: none; }
-  .planSummary { grid-template-columns: minmax(0, 1fr) 96px 96px; }
+  .planHead,
+  .planRow { grid-template-columns: var(--plan-cols-phone); }
+  .planEverything { display: none; }
+  /* Each summary row: its label on a line, then one cell per option. */
+  .planSummary { grid-template-columns: repeat(var(--plan-n), minmax(0, 1fr)); row-gap: 4px; }
   .planSummaryHead { display: grid; font-size: 13px; font-weight: 600; margin-top: 4px; padding-top: 12px; border-top: 1px solid var(--border-subtle); }
+  .planSummaryHead > :first-child { display: none; }
   .planSummaryHead + .planTotal { margin-top: 0; padding-top: 0; border-top: 0; }
-  .planLabel { grid-column: auto; justify-self: start; }
+  .planLabel { grid-column: 1 / -1; justify-self: start; }
 }
 
 .planHint {
@@ -264,4 +266,30 @@
   font-size: 12px;
   color: var(--text-muted);
   text-align: right;
+}
+
+.onSale {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 20px;
+  margin-bottom: 20px;
+}
+
+.onSaleLabel {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-body);
+}
+
+.planWarning {
+  margin: -8px 0 16px;
+  font-size: 14px;
+  color: var(--danger-fg);
+}
+
+.planNotes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
 }

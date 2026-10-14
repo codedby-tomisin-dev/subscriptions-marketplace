@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useToast } from "@/components/ui";
 import { useAuth } from "@/features/auth";
-import type { Box, Cadence } from "@/features/catalog";
+import { boxOptions, type Box, type PurchaseOption } from "@/features/catalog";
 import { createCheckoutSession } from "@/features/subscriptions";
 import { describeError } from "@/shared/api";
 import { upcomingDeliveryDates } from "@/shared/utils";
@@ -11,14 +11,16 @@ import { savePendingPurchase, takePendingPurchase } from "../storage";
 const DEFAULT_DATE_INDEX = 2;
 
 /**
- * Purchase-panel choices for one box, and the action that sends them to Stripe Checkout.
+ * Purchase-panel choices for one box (a subscription, or a single box), and the action that sends them to Stripe Checkout.
  * Signed-out customers sign in first; their choices are kept and restored on return.
  */
 export function useStartSubscription(box: Box) {
   const { user, openSignIn } = useAuth();
   const { showToast } = useToast();
   const deliveryDates = useMemo(() => upcomingDeliveryDates(new Date()), []);
-  const [cadence, setCadence] = useState<Cadence>("month");
+  const options = useMemo(() => boxOptions(box), [box]);
+  // Monthly is the one most people pick, where it's offered.
+  const [option, setOption] = useState<PurchaseOption>(options.includes("month") ? "month" : options[0]);
   const [firstDelivery, setFirstDelivery] = useState(deliveryDates[DEFAULT_DATE_INDEX]);
   const [isGift, setIsGift] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
@@ -27,13 +29,13 @@ export function useStartSubscription(box: Box) {
   useEffect(() => {
     const pending = takePendingPurchase(box.id);
     if (!pending) return;
-    setCadence(pending.cadence);
+    if (options.includes(pending.cadence)) setOption(pending.cadence);
     setIsGift(pending.isGift);
     if (deliveryDates.includes(pending.firstDelivery)) setFirstDelivery(pending.firstDelivery);
-  }, [box.id, deliveryDates]);
+  }, [box.id, deliveryDates, options]);
 
   const start = async () => {
-    const purchase = { boxId: box.id, cadence, firstDelivery, isGift };
+    const purchase = { boxId: box.id, cadence: option, firstDelivery, isGift };
     if (!user) {
       savePendingPurchase(purchase);
       openSignIn(`/boxes/${box.id}`);
@@ -48,5 +50,5 @@ export function useStartSubscription(box: Box) {
     }
   };
 
-  return { deliveryDates, cadence, setCadence, firstDelivery, setFirstDelivery, isGift, setIsGift, start, isStarting };
+  return { deliveryDates, options, option, setOption, firstDelivery, setFirstDelivery, isGift, setIsGift, start, isStarting };
 }

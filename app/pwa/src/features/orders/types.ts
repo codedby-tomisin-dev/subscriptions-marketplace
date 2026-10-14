@@ -1,4 +1,4 @@
-import type { Cadence } from "@/features/catalog";
+import type { PurchaseOption } from "@/features/catalog";
 
 /** Where an order is in the warehouse. Customers see a simpler version (see `customerOrderStage`). */
 export type OrderStatus = "topack" | "packed" | "labelled" | "shipped" | "delivered" | "refunded";
@@ -10,9 +10,11 @@ export interface Order {
   customerId: string;
   customerName: string;
   city: string;
-  subscriptionId: string;
+  /** Null for a one-off box. */
+  subscriptionId: string | null;
   boxId: string;
-  cadence: Cadence;
+  /** "once" for a one-off box. */
+  cadence: PurchaseOption;
   isGift: boolean;
   /** What goes in the box, recorded when it was charged. */
   items: string[];

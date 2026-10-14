@@ -3,7 +3,7 @@ from typing import Callable, Literal
 
 from core import telemetry
 from modules.billing.gateway import BillingGateway
-from modules.catalog.catalog import Catalog, parse_cadence, price_lookup_key
+from modules.catalog.catalog import OPTION_NAMES, Catalog, parse_cadence, price_lookup_key
 from modules.shared.clock import timestamp
 from modules.shared.errors import FailedPrecondition
 from modules.subscriptions import lifecycle
@@ -51,7 +51,10 @@ class SubscriptionService:
         match action:
             case "change_cadence":
                 cadence = parse_cadence(params.get("cadence"))
-                price = self._catalog().get(subscription.box_id).prices[cadence]
+                box = self._catalog().get(subscription.box_id)
+                if not box.offers(cadence):
+                    raise FailedPrecondition(f"The {box.name.lower()} box isn’t sold {OPTION_NAMES[cadence]} any more.")
+                price = box.prices[cadence]
                 return lifecycle.change_cadence(subscription, cadence, price_pence=price, retention=retention)
             case "skip_next":
                 return lifecycle.skip_next(subscription)

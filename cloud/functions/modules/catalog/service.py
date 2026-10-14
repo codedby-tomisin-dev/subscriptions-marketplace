@@ -5,7 +5,7 @@ from pydantic import ValidationError
 
 from core import telemetry
 from modules.billing.gateway import BillingGateway
-from modules.catalog.catalog import Box, CADENCES
+from modules.catalog.catalog import OPTION_NAMES, Box
 from modules.catalog.repository import CatalogRepository
 from modules.inventory.repository import InventoryRepository
 from modules.shared.clock import timestamp
@@ -101,13 +101,14 @@ class CatalogService:
     def _validate(box: Box) -> None:
         if not box.name.strip():
             raise ValueError("Give the box a name.")
-        for cadence in CADENCES:
-            price = box.prices.get(cadence)
-            if price is None or not MIN_PRICE_PENCE <= price <= MAX_PRICE_PENCE:
-                raise ValueError(f"The {cadence}ly price must be between £1 and £1,000.")
-            if not box.plan_notes.get(cadence, "").strip():
-                raise ValueError(f"Describe what the {cadence}ly box includes.")
+        if not box.options:
+            raise ValueError("Put the box on sale at least one way: weekly, monthly or one-off.")
+        for option in box.options:
+            if not MIN_PRICE_PENCE <= box.prices[option] <= MAX_PRICE_PENCE:
+                raise ValueError(f"The {OPTION_NAMES[option]} price must be between £1 and £1,000.")
+            if not box.plan_notes.get(option, "").strip():
+                raise ValueError(f"Describe what the {OPTION_NAMES[option]} box includes.")
         if not box.items:
             raise ValueError("Add at least one item that goes in the box.")
-        if not box.items_for("week"):
+        if box.offers("week") and not box.items_for("week"):
             raise ValueError("At least one item needs to go in the weekly box.")

@@ -2,7 +2,7 @@
 
 import { ArrowLeft, Gift, Printer } from "lucide-react";
 import { Button } from "@/components/ui";
-import { useCatalog } from "@/features/catalog";
+import { PURCHASE_COPY, useCatalog } from "@/features/catalog";
 import { formatDay, formatPrice } from "@/shared/utils";
 import { AdminPageHeader } from "../shared";
 import { usePackingSlips, type PackingSlip } from "./usePackingSlips";
@@ -58,7 +58,7 @@ function Slip({ slip: { order, customer } }: { slip: PackingSlip }) {
       </header>
       <div className={styles.boxLine}>
         <b>
-          {box?.name ?? order.boxId} · {order.cadence === "week" ? "weekly" : "monthly"}
+          {box?.name ?? order.boxId} · {PURCHASE_COPY[order.cadence].label.toLowerCase()}
         </b>
         {order.isGift ? (
           <span className={styles.gift}>

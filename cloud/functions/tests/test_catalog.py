@@ -105,6 +105,9 @@ def test_saving_without_stripe_configured_still_works(catalog):
         ({"items": []}, "at least one item"),
         ({"items": [{"name": "Bookmark", "inWeeklyBox": False}]}, "weekly box"),
         ({"tone": "neon"}, "tone"),
+        ({"prices": {}, "planNotes": {}}, "at least one way"),
+        ({"prices": {"once": 2500}, "planNotes": {}}, "one-off box includes"),
+        ({"prices": {"fortnight": 2500}}, "prices"),
         ({"items": [{"name": "Paperback", "inWeeklyBox": True, "costPence": -1}]}, "greater than or equal to 0"),
     ],
 )
@@ -123,3 +126,13 @@ def test_archiving(catalog):
     assert loaded.get("reading-nook").status == "archived"
     with pytest.raises(KeyError):
         service.set_status("nope", "archived")
+
+
+def test_a_box_can_be_sold_only_once(catalog):
+    service, gateway, _, db = catalog
+    # No weekly box, so nothing has to be ticked for it.
+    box = service.save_box(new_box(prices={"once": 3500}, planNotes={"once": "The whole nook, once"}, items=[{"name": "Paperback", "inWeeklyBox": False}]))["box"]
+    assert box["prices"] == {"once": 3500}
+    assert ("sync_prices", "reading-nook", {"once": 3500}) in gateway.calls
+    saved = CatalogRepository(db).load().get("reading-nook")
+    assert saved.options == ["once"] and [item.name for item in saved.items_for("once")] == ["Paperback"]

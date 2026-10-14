@@ -72,13 +72,13 @@ function StockView({ report, onReorder, reorderingId }: StockViewProps) {
                     <div className={admin.num} style={{ fontSize: 20 }}>
                       {weekly}
                     </div>
-                    weekly · {formatPrice(box.prices.week)}
+                    weekly · {box.prices.week === undefined ? "off sale" : formatPrice(box.prices.week)}
                   </div>
                   <div>
                     <div className={admin.num} style={{ fontSize: 20 }}>
                       {monthly}
                     </div>
-                    monthly · {formatPrice(box.prices.month)}
+                    monthly · {box.prices.month === undefined ? "off sale" : formatPrice(box.prices.month)}
                   </div>
                 </div>
               </div>

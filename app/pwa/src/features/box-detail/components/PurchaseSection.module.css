@@ -213,3 +213,8 @@
 @media (max-width: 340px) {
   .cadences { grid-template-columns: 1fr; }
 }
+
+/* Weekly, monthly and one-off: the one-off card takes the full row below. */
+.cadences[data-count="3"] > :last-child {
+  grid-column: 1 / -1;
+}

@@ -4,7 +4,7 @@ from firebase_functions import https_fn
 
 from core import config
 from modules.billing.wiring import build_billing_service, stripe_gateway
-from modules.catalog.catalog import parse_cadence
+from modules.catalog.catalog import parse_purchase_option
 from modules.shared.clock import today_in_london
 from modules.shared.handler_context import traced_call, traced_request
 from modules.shared.responses import make_success_response
@@ -13,11 +13,12 @@ from modules.shared.responses import make_success_response
 @https_fn.on_call()
 @traced_call
 def create_checkout_session(req: https_fn.CallableRequest) -> dict:
-    """{boxId, cadence, firstDelivery, isGift} → {url} of a Stripe Checkout page."""
+    """{boxId, cadence: week|month|once, firstDelivery, isGift} → {url} of a Stripe Checkout page.
+    "once" buys a single box, delivered on `firstDelivery`, with no subscription."""
     data = req.data or {}
     email = req.auth.token.get("email")
     if not email:
-        raise ValueError("Your account needs an email address to subscribe.")
+        raise ValueError("Your account needs an email address to check out.")
     try:
         first_delivery = date.fromisoformat(str(data.get("firstDelivery")))
     except ValueError:
@@ -26,7 +27,7 @@ def create_checkout_session(req: https_fn.CallableRequest) -> dict:
         uid=req.auth.uid,
         email=email,
         box_id=str(data.get("boxId") or ""),
-        cadence=parse_cadence(data.get("cadence")),
+        option=parse_purchase_option(data.get("cadence")),
         first_delivery=first_delivery,
         is_gift=bool(data.get("isGift")),
         today=today_in_london(),

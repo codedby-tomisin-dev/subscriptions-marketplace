@@ -6,6 +6,7 @@ import { Button, Card, Tabs } from "@/components/ui";
 import { useAuth } from "@/features/auth";
 import { useCatalog } from "@/features/catalog";
 import { firstName } from "@/features/customers";
+import { customerOrderStage, type Order } from "@/features/orders";
 import { nextBoxArrives, useSubscriptions, type Subscription } from "@/features/subscriptions";
 import { formatDay } from "@/shared/utils";
 import { useAccountData } from "../hooks/useAccountData";
@@ -21,14 +22,18 @@ type AccountTab = "subscriptions" | "orders";
 /** Live subscriptions first, cancelled ones at the bottom. */
 const byLiveFirst = (a: Subscription, b: Subscription) => Number(a.status === "cancelled") - Number(b.status === "cancelled");
 
-function summarise(subscriptions: Subscription[]) {
+function summarise(subscriptions: Subscription[], orders: Order[]) {
   const active = subscriptions.filter((subscription) => subscription.status === "active");
-  if (!active.length) return "No boxes on the way right now.";
-  const nextUp = active
-    .map(nextBoxArrives)
-    .filter((date): date is string => !!date)
-    .sort()[0];
-  const count = `${active.length} active subscription${active.length > 1 ? "s" : ""}`;
+  // One-off boxes have no subscription, so they're counted from their orders.
+  const oneOffs = orders.filter((order) => order.cadence === "once" && ["preparing", "transit"].includes(customerOrderStage(order.status)));
+  if (!active.length && !oneOffs.length) return "No boxes on the way right now.";
+  const nextUp = [...active.map(nextBoxArrives), ...oneOffs.map((order) => order.deliveryDate)].filter((date): date is string => !!date).sort()[0];
+  const count = [
+    active.length && `${active.length} active subscription${active.length > 1 ? "s" : ""}`,
+    oneOffs.length && `${oneOffs.length} one-off box${oneOffs.length > 1 ? "es" : ""} on the way`,
+  ]
+    .filter(Boolean)
+    .join(" · ");
   return nextUp ? `${count} · next box ${formatDay(nextUp).replace(/ /g, " ")}` : count;
 }
 
@@ -53,7 +58,9 @@ export function AccountContainer() {
 function Account({ subscriptions, email }: { subscriptions: Subscription[]; email: string | null }) {
   const { customer, orders } = useAccountData();
   const actions = useSubscriptionActions();
-  const [tab, setTab] = useState<AccountTab>("subscriptions");
+  // Until a tab is picked: orders for someone who's only bought one-off boxes, else subscriptions.
+  const [pickedTab, setTab] = useState<AccountTab | null>(null);
+  const tab = pickedTab ?? (!subscriptions.length && orders.length ? "orders" : "subscriptions");
   const [cancelTarget, setCancelTarget] = useState<Subscription | null>(null);
   const { getBox } = useCatalog();
   const cancelBox = cancelTarget && getBox(cancelTarget.boxId);
@@ -64,7 +71,7 @@ function Account({ subscriptions, email }: { subscriptions: Subscription[]; emai
       <div className={styles.head}>
         <div className={styles.greeting}>
           <h1 className="bb-heading">{name ? `Hi, ${name}.` : "Hi there."}</h1>
-          <p className={styles.summary}>{summarise(subscriptions)}</p>
+          <p className={styles.summary}>{summarise(subscriptions, orders)}</p>
         </div>
         <span className={styles.wideOnly}>
           <Button variant="secondary" iconLeft={Plus} href="/">

@@ -41,7 +41,9 @@ Seeded subscriptions have no Stripe subscription behind them. Changing one skips
 Boxes live in Firestore (`boxes/{id}`) and are edited in the admin under **Boxes & stock**, with **New box** and **Edit**. Saving a box:
 - validates it;
 - creates inventory docs for new packing items, starting at 0 stock;
-- if the price changed, creates a new Stripe price and moves the `{box}_{week|month}` lookup key to it. New subscribers pay the new price; existing ones keep theirs, which is recorded on each subscription as `pricePence`. With no Stripe key set, boxes still save and the prices just aren't synced.
+- if a price changed, creates a new Stripe price and moves the `{box}_{week|month|once}` lookup key to it. New subscribers pay the new price; existing ones keep theirs, which is recorded on each subscription as `pricePence`. With no Stripe key set, boxes still save and the prices just aren't synced.
+
+**How a box is sold:** each box can be sold weekly, monthly and/or one-off, ticked under **Sold as** in the editor; a box has a price only for the ways it's sold (`prices.week`, `prices.month`, `prices.once`). The same panel lists the packing items with their average supermarket cost and shows each option's items cost, price and profit. Weekly boxes hold the ticked items; monthly and one-off boxes hold everything. Taking a cadence off sale leaves existing subscribers on it, but nobody can switch to it.
 
 Archiving takes a box off the storefront; existing subscriptions carry on. Photos upload to Storage under `boxes/`, which only admins can write (`storage.rules`). Storefront pages revalidate every minute, so edits appear within about a minute.
 
@@ -62,6 +64,7 @@ OPENAI_IMAGE_MODEL=gpt-image-2     # optional override, for illustrations
 - The first box is charged at checkout. Every later box is charged 3 days before it arrives: we set the Stripe subscription's `trial_end` to that charge time.
 - Skip, pause, resume and cadence changes all just move that date. Stripe shows the subscriptions as "trialing" between charges; our `status` field is the truth.
 - `invoice.paid` creates the order, marks that box as packed (`packedDelivery`) and moves the schedule on one delivery. It runs in one Firestore transaction keyed by the invoice id, so a webhook delivered twice creates one order.
+- A one-off box is a Checkout session in payment mode against the box's non-recurring `{box}_once` price. `checkout.session.completed` (paid) creates its order straight away, with no subscription; it's keyed by the payment intent, so a repeated webhook creates one order. Refunds go back to that payment intent.
 - Cancelling sets `cancel_at_period_end`, so nothing more is charged, and a box already paid for still ships. Undo works until Stripe actually ends the subscription. After that, "Restart" starts a new Stripe subscription with the saved card.
 
 ## Layout

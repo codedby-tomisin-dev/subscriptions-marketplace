@@ -1,40 +1,58 @@
+import type { CSSProperties } from "react";
 import { Check, Plus, Trash2 } from "lucide-react";
 import { Button, Checkbox, IconButton, Input } from "@/components/ui";
-import type { Cadence } from "@/features/catalog";
+import { PURCHASE_COPY, PURCHASE_OPTIONS, type PurchaseOption } from "@/features/catalog";
 import { formatPrice } from "@/shared/utils";
 import { AdminPanel } from "../shared";
-import { planEconomics, type BoxDraft, type DraftItem } from "./boxDraft";
+import { draftOptions, planEconomics, type BoxDraft, type DraftItem } from "./boxDraft";
 import styles from "./BoxEditor.module.css";
 
-const PLANS: { cadence: Cadence; label: string }[] = [
-  { cadence: "week", label: "Weekly" },
-  { cadence: "month", label: "Monthly" },
-];
+const PLACEHOLDERS: Record<PurchaseOption, string> = { week: "A short read · 2 treats", month: "The full nook · 5 treats", once: "The full nook, just once" };
 
 interface PlansPanelProps {
   draft: BoxDraft;
   update: (patch: Partial<BoxDraft>) => void;
 }
 
-/** What goes in each plan, what it costs us, what it sells for and what's left: one table, summed as you type. */
+/** How the box is sold, what goes in it, what it costs us, what it sells for and what's left: one table, summed as you type. */
 export function PlansPanel({ draft, update }: PlansPanelProps) {
   const economics = planEconomics(draft);
+  const options = draftOptions(draft);
   const setItems = (items: DraftItem[]) => update({ items });
   const changeItem = (index: number, patch: Partial<DraftItem>) => setItems(draft.items.map((item, i) => (i === index ? { ...item, ...patch } : item)));
+  // Option columns follow the options on sale. Phones keep only the weekly tick column in item rows.
+  const columns = {
+    "--plan-cols": `minmax(120px, 1fr) 104px ${options.map(() => "104px").join(" ")} 32px`,
+    "--plan-cols-phone": `minmax(0, 1fr) 80px ${draft.onSale.week ? "52px " : ""}32px`,
+    "--plan-n": options.length,
+  } as CSSProperties;
 
   return (
     <AdminPanel title="Plans, items and profit">
       <p className={styles.note}>
-        What physically goes in each box, at the average price across the big supermarkets. Weekly boxes hold the ticked items; monthly boxes hold
-        everything. A new price applies to new subscribers only.
+        How the box is sold, and what physically goes in it at the average price across the big supermarkets. Weekly boxes hold the ticked items;
+        monthly and one-off boxes hold everything. A new price applies to new customers only.
       </p>
-      <div className={styles.planTable} role="table" aria-label="Packing items, prices and profit per plan">
+      <div className={styles.onSale} role="group" aria-label="Sold as">
+        <span className={styles.onSaleLabel}>Sold as</span>
+        {PURCHASE_OPTIONS.map((option) => (
+          <Checkbox
+            key={option}
+            label={PURCHASE_COPY[option].label}
+            checked={draft.onSale[option]}
+            onChange={(checked) => update({ onSale: { ...draft.onSale, [option]: checked } })}
+          />
+        ))}
+      </div>
+      {options.length === 0 && <p className={styles.planWarning}>Tick at least one way to sell it, or customers can’t buy it.</p>}
+
+      <div className={styles.planTable} role="table" aria-label="Packing items, prices and profit per option" style={columns}>
         <div className={styles.planHead} role="row">
           <span role="columnheader">Item</span>
           <span role="columnheader">Avg. cost</span>
-          {PLANS.map((plan) => (
-            <span key={plan.cadence} role="columnheader" className={plan.cadence === "month" ? `${styles.planCol} ${styles.planMonthly}` : styles.planCol}>
-              {plan.label}
+          {options.map((option) => (
+            <span key={option} role="columnheader" className={option === "week" ? styles.planCol : `${styles.planCol} ${styles.planEverything}`}>
+              {PURCHASE_COPY[option].label}
             </span>
           ))}
           <span aria-hidden />
@@ -50,12 +68,17 @@ export function PlansPanel({ draft, update }: PlansPanelProps) {
               onChange={(cost) => changeItem(index, { cost })}
               placeholder="£0.00"
             />
-            <span className={styles.planCol}>
-              <Checkbox ariaLabel={`Item ${index + 1} in weekly box`} checked={item.inWeeklyBox} onChange={(inWeeklyBox) => changeItem(index, { inWeeklyBox })} />
-            </span>
-            <span className={`${styles.planCol} ${styles.planMonthly}`} title="Monthly boxes hold every item">
-              <Check size={16} aria-label="In monthly box" />
-            </span>
+            {options.map((option) =>
+              option === "week" ? (
+                <span key={option} className={styles.planCol}>
+                  <Checkbox ariaLabel={`Item ${index + 1} in weekly box`} checked={item.inWeeklyBox} onChange={(inWeeklyBox) => changeItem(index, { inWeeklyBox })} />
+                </span>
+              ) : (
+                <span key={option} className={`${styles.planCol} ${styles.planEverything}`} title={`${PURCHASE_COPY[option].label} boxes hold every item`}>
+                  <Check size={16} aria-label={`In ${PURCHASE_COPY[option].label.toLowerCase()} box`} />
+                </span>
+              ),
+            )}
             <IconButton icon={Trash2} label={`Remove item ${index + 1}`} variant="ghost" size="sm" onClick={() => setItems(draft.items.filter((_, i) => i !== index))} />
           </div>
         ))}
@@ -65,73 +88,73 @@ export function PlansPanel({ draft, update }: PlansPanelProps) {
           </Button>
         </div>
 
-        {/* Phones drop the monthly column from the item rows, so the sums get their own headings. */}
-        <div className={`${styles.planSummary} ${styles.planSummaryHead}`} aria-hidden>
-          <span />
-          {PLANS.map((plan) => (
-            <span key={plan.cadence} className={styles.planCol}>
-              {plan.label}
-            </span>
-          ))}
-        </div>
-        <div className={`${styles.planSummary} ${styles.planTotal}`} role="row">
-          <span role="rowheader" className={styles.planLabel}>
-            Items cost
-          </span>
-          {PLANS.map(({ cadence }) => (
-            <span key={cadence} className={styles.planCol}>
-              <span className={styles.planFigure}>{formatPrice(economics[cadence].cost)}</span>
-              {economics[cadence].uncosted > 0 && <span className={styles.planHint}>+{economics[cadence].uncosted} unpriced</span>}
-            </span>
-          ))}
-        </div>
-        <div className={styles.planSummary} role="row">
-          <span role="rowheader" className={styles.planLabel}>
-            Price
-          </span>
-          {PLANS.map(({ cadence, label }) => (
-            <Input
-              key={cadence}
-              ariaLabel={`${label} price (£)`}
-              inputMode="decimal"
-              value={draft.prices[cadence]}
-              onChange={(price) => update({ prices: { ...draft.prices, [cadence]: price } })}
-              required
-            />
-          ))}
-        </div>
-        <div className={`${styles.planSummary} ${styles.planProfit}`} role="row">
-          <span role="rowheader" className={styles.planLabel}>
-            Profit per box
-          </span>
-          {PLANS.map(({ cadence }) => {
-            const { profit, margin } = economics[cadence];
-            return (
-              <span key={cadence} className={styles.planCol} data-loss={profit !== null && profit < 0 ? true : undefined}>
-                <span className={styles.planFigure}>{profit === null ? "–" : formatPrice(profit)}</span>
-                {margin !== null && <span className={styles.planHint}>{Math.round(margin * 100)}% margin</span>}
+        {options.length > 0 && (
+          <>
+            {/* Phones drop the option columns from the item rows, so the sums get their own headings. */}
+            <div className={`${styles.planSummary} ${styles.planSummaryHead}`} aria-hidden>
+              <span />
+              {options.map((option) => (
+                <span key={option} className={styles.planCol}>
+                  {PURCHASE_COPY[option].label}
+                </span>
+              ))}
+            </div>
+            <div className={`${styles.planSummary} ${styles.planTotal}`} role="row">
+              <span role="rowheader" className={styles.planLabel}>
+                Items cost
               </span>
-            );
-          })}
-        </div>
+              {options.map((option) => (
+                <span key={option} className={styles.planCol}>
+                  <span className={styles.planFigure}>{formatPrice(economics[option].cost)}</span>
+                  {economics[option].uncosted > 0 && <span className={styles.planHint}>+{economics[option].uncosted} unpriced</span>}
+                </span>
+              ))}
+            </div>
+            <div className={styles.planSummary} role="row">
+              <span role="rowheader" className={styles.planLabel}>
+                Price
+              </span>
+              {options.map((option) => (
+                <Input
+                  key={option}
+                  ariaLabel={`${PURCHASE_COPY[option].label} price (£)`}
+                  inputMode="decimal"
+                  value={draft.prices[option]}
+                  onChange={(price) => update({ prices: { ...draft.prices, [option]: price } })}
+                  required
+                />
+              ))}
+            </div>
+            <div className={`${styles.planSummary} ${styles.planProfit}`} role="row">
+              <span role="rowheader" className={styles.planLabel}>
+                Profit per box
+              </span>
+              {options.map((option) => {
+                const { profit, margin } = economics[option];
+                return (
+                  <span key={option} className={styles.planCol} data-loss={profit !== null && profit < 0 ? true : undefined}>
+                    <span className={styles.planFigure}>{profit === null ? "–" : formatPrice(profit)}</span>
+                    {margin !== null && <span className={styles.planHint}>{Math.round(margin * 100)}% margin</span>}
+                  </span>
+                );
+              })}
+            </div>
+          </>
+        )}
       </div>
-      <p className={styles.planFootnote}>Before postage, packaging and card fees.</p>
+      {options.length > 0 && <p className={styles.planFootnote}>Before postage, packaging and card fees.</p>}
 
-      <div className={styles.grid2}>
-        <Input
-          label="What the weekly box includes"
-          value={draft.planNotes.week}
-          onChange={(week) => update({ planNotes: { ...draft.planNotes, week } })}
-          placeholder="A short read · 2 treats"
-          required
-        />
-        <Input
-          label="What the monthly box includes"
-          value={draft.planNotes.month}
-          onChange={(month) => update({ planNotes: { ...draft.planNotes, month } })}
-          placeholder="The full nook · 5 treats"
-          required
-        />
+      <div className={styles.planNotes}>
+        {options.map((option) => (
+          <Input
+            key={option}
+            label={`What the ${PURCHASE_COPY[option].label.toLowerCase()} box includes`}
+            value={draft.planNotes[option]}
+            onChange={(note) => update({ planNotes: { ...draft.planNotes, [option]: note } })}
+            placeholder={PLACEHOLDERS[option]}
+            required
+          />
+        ))}
       </div>
     </AdminPanel>
   );

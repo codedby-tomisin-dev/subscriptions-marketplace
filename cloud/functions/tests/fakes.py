@@ -41,6 +41,9 @@ class FakeGateway:
     def refund_invoice(self, invoice_id: str) -> None:
         self.calls.append(("refund", invoice_id))
 
+    def refund_payment(self, payment_intent_id: str) -> None:
+        self.calls.append(("refund_payment", payment_intent_id))
+
     def sync_box_prices(self, box_id: str, name: str, prices_pence: dict[str, int]) -> list[str]:
         self.calls.append(("sync_prices", box_id, dict(prices_pence)))
         return list(prices_pence)
