@@ -69,6 +69,8 @@ class InventoryItem(Document):
     name: str
     # Monthly boxes hold everything; weekly boxes are smaller.
     in_weekly_box: bool = True
+    # What one costs us: the average shelf price across the big UK supermarkets. For the editor's profit sums.
+    cost_pence: int | None = Field(default=None, ge=0)
 
 
 class Box(Document):

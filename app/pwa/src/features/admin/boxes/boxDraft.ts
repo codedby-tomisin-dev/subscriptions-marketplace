@@ -2,7 +2,15 @@ import type { Box, BoxFact, BoxItem, BoxStatus, Cadence, RitualStep } from "@/fe
 import type { SurfaceTone } from "@/shared/types";
 import type { BoxPayload, GeneratedListing } from "./api";
 
-/** The editor's form state. Prices are edited as pounds text ("19" or "18.50"). */
+/** A packing item in the form; its cost is pounds text like the prices, blank if unknown. */
+export interface DraftItem {
+  id?: string;
+  name: string;
+  inWeeklyBox: boolean;
+  cost: string;
+}
+
+/** The editor's form state. Prices and costs are edited as pounds text ("19" or "18.50"). */
 export interface BoxDraft {
   id?: string;
   name: string;
@@ -19,7 +27,7 @@ export interface BoxDraft {
   ritual: RitualStep[];
   contents: BoxItem[];
   testimonial: { quote: string; attribution: string };
-  items: { id?: string; name: string; inWeeklyBox: boolean }[];
+  items: DraftItem[];
   status: BoxStatus;
   sortOrder: number;
 }
@@ -51,7 +59,7 @@ export function emptyDraft(sortOrder: number): BoxDraft {
     ritual: [{ title: "", body: "" }],
     contents: [{ name: "", description: "", tone: "cream" }],
     testimonial: { quote: "", attribution: "" },
-    items: [{ name: "", inWeeklyBox: true }],
+    items: [{ name: "", inWeeklyBox: true, cost: "" }],
     status: "active",
     sortOrder,
   };
@@ -62,7 +70,7 @@ export function draftFromBox(box: Box): BoxDraft {
     ...box,
     prices: { week: toPounds(box.prices.week), month: toPounds(box.prices.month) },
     testimonial: box.testimonial ?? { quote: "", attribution: "" },
-    items: box.items.map((item) => ({ ...item })),
+    items: box.items.map(({ costPence, ...item }) => ({ ...item, cost: costPence == null ? "" : toPounds(costPence) })),
   };
 }
 
@@ -75,7 +83,7 @@ export function draftFromListing(listing: GeneratedListing, current: BoxDraft): 
     image: current.image,
     prices: { week: toPounds(listing.prices.week), month: toPounds(listing.prices.month) },
     testimonial: { quote: "", attribution: "" },
-    items: listing.items.map((item) => ({ name: item.name, inWeeklyBox: item.inWeeklyBox })),
+    items: listing.items.map((item) => ({ name: item.name, inWeeklyBox: item.inWeeklyBox, cost: item.costPence == null ? "" : toPounds(item.costPence) })),
     status: current.status,
   };
 }
@@ -87,12 +95,39 @@ export function parsePounds(text: string): number | null {
   return Math.round(Number(cleaned) * 100);
 }
 
+export interface PlanEconomics {
+  /** Null while the price doesn't parse. */
+  price: number | null;
+  /** The plan's items that have a cost, summed. */
+  cost: number;
+  /** Items in this plan with no cost yet, so the sum is short. */
+  uncosted: number;
+  profit: number | null;
+  /** Profit as a share of the price, 0–1. */
+  margin: number | null;
+}
+
+/** Price, item cost and profit per plan, from the form as typed. Weekly boxes hold the ticked items; monthly hold them all. */
+export function planEconomics(draft: Pick<BoxDraft, "prices" | "items">): Record<Cadence, PlanEconomics> {
+  const plan = (cadence: Cadence): PlanEconomics => {
+    const items = draft.items.filter((item) => item.name.trim() && (cadence === "month" || item.inWeeklyBox));
+    const costs = items.map((item) => parsePounds(item.cost));
+    const cost = costs.reduce<number>((sum, pence) => sum + (pence ?? 0), 0);
+    const price = parsePounds(draft.prices[cadence]);
+    const profit = price === null ? null : price - cost;
+    return { price, cost, uncosted: costs.filter((pence) => pence === null).length, profit, margin: price && profit !== null ? profit / price : null };
+  };
+  return { week: plan("week"), month: plan("month") };
+}
+
 /** Turns the form into what admin_save_box expects, dropping blank rows. Returns an error message if prices don't parse. */
 export function payloadFromDraft(draft: BoxDraft): { payload: BoxPayload } | { error: string } {
   const week = parsePounds(draft.prices.week);
   const month = parsePounds(draft.prices.month);
   if (week === null || month === null) return { error: "Enter both prices in pounds, e.g. 19 or 18.50." };
   const filled = (text: string) => text.trim().length > 0;
+  const items = draft.items.filter((item) => filled(item.name));
+  if (items.some((item) => filled(item.cost) && parsePounds(item.cost) === null)) return { error: "Enter item costs in pounds, e.g. 3.50, or leave them blank." };
   const testimonial = filled(draft.testimonial.quote) ? draft.testimonial : null;
   return {
     payload: {
@@ -101,7 +136,7 @@ export function payloadFromDraft(draft: BoxDraft): { payload: BoxPayload } | { e
       facts: draft.facts.filter((fact) => filled(fact.label)),
       ritual: draft.ritual.filter((step) => filled(step.title) || filled(step.body)),
       contents: draft.contents.filter((item) => filled(item.name)),
-      items: draft.items.filter((item) => filled(item.name)),
+      items: items.map(({ cost, ...item }) => ({ ...item, costPence: filled(cost) ? parsePounds(cost) : null })),
       testimonial,
     },
   };

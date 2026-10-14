@@ -41,7 +41,7 @@ def new_box(**overrides) -> dict:
         "pitch": "Chapter one, on repeat.",
         "story": "A paperback, a bookmark and something to sip.",
         "facts": [{"icon": "BookOpen", "label": "A new paperback each month"}],
-        "items": [{"name": "Paperback", "inWeeklyBox": True}, {"name": "Bookmark", "inWeeklyBox": False}],
+        "items": [{"name": "Paperback", "inWeeklyBox": True, "costPence": 499}, {"name": "Bookmark", "inWeeklyBox": False}],
         **overrides,
     }
 
@@ -62,6 +62,7 @@ def test_creating_a_box_saves_it_syncs_stripe_and_adds_stock_items(catalog):
 
     saved = CatalogRepository(db).load().get("reading-nook")
     assert [item.id for item in saved.items] == ["reading-nook-paperback", "reading-nook-bookmark"]
+    assert [item.cost_pence for item in saved.items] == [499, None]  # costs are optional
     assert db.document("inventory/reading-nook-paperback").get().to_dict() == {
         "boxId": "reading-nook", "name": "Paperback", "inWeeklyBox": True, "stock": 0,
     }
@@ -104,6 +105,7 @@ def test_saving_without_stripe_configured_still_works(catalog):
         ({"items": []}, "at least one item"),
         ({"items": [{"name": "Bookmark", "inWeeklyBox": False}]}, "weekly box"),
         ({"tone": "neon"}, "tone"),
+        ({"items": [{"name": "Paperback", "inWeeklyBox": True, "costPence": -1}]}, "greater than or equal to 0"),
     ],
 )
 def test_rejects_incomplete_boxes(catalog, overrides, message):

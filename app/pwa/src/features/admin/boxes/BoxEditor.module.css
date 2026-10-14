@@ -173,3 +173,95 @@
 @media (prefers-reduced-motion: reduce) {
   .illustration[aria-busy="true"] { animation: none; }
 }
+
+/* Plans, items and profit: one table, read across */
+
+.planTable {
+  --plan-cols: minmax(160px, 1fr) 112px 120px 120px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.planHead,
+.planRow,
+.planSummary {
+  display: grid;
+  grid-template-columns: var(--plan-cols);
+  align-items: center;
+  gap: 12px;
+}
+
+.planHead {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.planCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+/* Summary rows: the label spans the item and cost columns. */
+.planLabel {
+  grid-column: 1 / 3;
+  justify-self: end;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-body);
+}
+
+.planTotal {
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.planFigure {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.planProfit .planFigure {
+  font-size: 18px;
+}
+
+.planCol[data-loss] .planFigure,
+.planCol[data-loss] .planHint {
+  color: var(--danger-fg);
+}
+
+.planSummaryHead {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .planTable { --plan-cols: minmax(0, 1fr) 80px 52px 32px; }
+  .planMonthly { display: none; }
+  .planSummary { grid-template-columns: minmax(0, 1fr) 96px 96px; }
+  .planSummaryHead { display: grid; font-size: 13px; font-weight: 600; margin-top: 4px; padding-top: 12px; border-top: 1px solid var(--border-subtle); }
+  .planSummaryHead + .planTotal { margin-top: 0; padding-top: 0; border-top: 0; }
+  .planLabel { grid-column: auto; justify-self: start; }
+}
+
+.planHint {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.planAdd {
+  margin-top: -4px;
+}
+
+.planFootnote {
+  margin: 8px 0 16px;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: right;
+}

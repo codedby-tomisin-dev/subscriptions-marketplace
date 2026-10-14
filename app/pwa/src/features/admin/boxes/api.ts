@@ -1,10 +1,10 @@
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
-import type { Box, BoxStatus } from "@/features/catalog";
+import type { Box, BoxInventoryItem, BoxStatus } from "@/features/catalog";
 import { callFunction, cloudStorage } from "@/shared/api";
 import type { SurfaceTone } from "@/shared/types";
 
 /** A box as the editor sends it: no id when creating; item ids only for existing items. */
-export type BoxPayload = Omit<Box, "id" | "items"> & { id?: string; items: { id?: string; name: string; inWeeklyBox: boolean }[] };
+export type BoxPayload = Omit<Box, "id" | "items"> & { id?: string; items: (Omit<BoxInventoryItem, "id"> & { id?: string })[] };
 
 export interface SaveBoxResult {
   box: Box;

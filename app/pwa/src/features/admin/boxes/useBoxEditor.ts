@@ -84,7 +84,7 @@ export function useBoxEditor(boxId: string | null) {
 
   /** Draws an illustration for `basis` (the form as it is, or a listing just drafted) and puts it in the form. */
   const drawIllustration = useCallback(
-    async (basis: Pick<BoxDraft, "name" | "audience" | "tone" | "contents" | "items">) => {
+    async (basis: Pick<BoxDraft, "name" | "audience" | "tone" | "contents"> & { items: { name: string }[] }) => {
       if (!basis.name.trim()) {
         showToast({ tone: "danger", title: "Name the box first", message: "The illustration is drawn from its name and what’s inside." });
         return;

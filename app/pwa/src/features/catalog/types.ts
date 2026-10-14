@@ -26,6 +26,8 @@ export interface BoxInventoryItem {
   name: string;
   /** Monthly boxes hold everything; weekly boxes hold the items marked here. */
   inWeeklyBox: boolean;
+  /** What one costs us: the average UK supermarket shelf price. Admin only, for profit sums. */
+  costPence?: number | null;
 }
 
 /** The picture that stands for a box in tiles and thumbnails: its illustration, else its photo. */

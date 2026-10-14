@@ -2,13 +2,14 @@
 
 import { useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { Archive, ArrowLeft, ArchiveRestore, ExternalLink, ImageUp, Save, Sparkles, X } from "lucide-react";
-import { Badge, Button, Checkbox, Input, ProductImage, Select, TextArea } from "@/components/ui";
+import { Badge, Button, Input, ProductImage, Select, TextArea } from "@/components/ui";
 import { BOX_ICON_NAMES, BoxIcon, type BoxItem } from "@/features/catalog";
 import { toneSurface } from "@/shared/types";
 import { AdminPageHeader, AdminPanel, ReportState } from "../shared";
 import type { ListingSource } from "./api";
 import { TONES, type BoxDraft } from "./boxDraft";
 import { GenerateListingDialog } from "./GenerateListingDialog";
+import { PlansPanel } from "./PlansPanel";
 import { RowList } from "./RowList";
 import { useBoxEditor } from "./useBoxEditor";
 import styles from "./BoxEditor.module.css";
@@ -114,44 +115,7 @@ function BoxEditorFields({ draft, update, onPhoto, isUploading, sources, onDraw,
           </div>
         </AdminPanel>
 
-        <AdminPanel title="Prices and plans">
-          <p className={styles.note}>A new price applies to new subscribers. Everyone already subscribed keeps the price they signed up at.</p>
-          <div className={styles.grid2}>
-            <Input label="Weekly price (£)" inputMode="decimal" value={draft.prices.week} onChange={(week) => update({ prices: { ...draft.prices, week } })} required />
-            <Input label="Monthly price (£)" inputMode="decimal" value={draft.prices.month} onChange={(month) => update({ prices: { ...draft.prices, month } })} required />
-            <Input
-              label="What the weekly box includes"
-              value={draft.planNotes.week}
-              onChange={(week) => update({ planNotes: { ...draft.planNotes, week } })}
-              placeholder="A short read · 2 treats"
-              required
-            />
-            <Input
-              label="What the monthly box includes"
-              value={draft.planNotes.month}
-              onChange={(month) => update({ planNotes: { ...draft.planNotes, month } })}
-              placeholder="The full nook · 5 treats"
-              required
-            />
-          </div>
-        </AdminPanel>
-
-        <AdminPanel title="Packing items">
-          <p className={styles.note}>What physically goes in the box. Each item gets a stock count on Boxes & stock; weekly boxes only hold the ones ticked.</p>
-          <RowList
-            rows={draft.items}
-            onChange={(items) => update({ items })}
-            makeRow={() => ({ name: "", inWeeklyBox: true })}
-            rowName="item"
-            addLabel="Add item"
-            renderRow={(item, change, index) => (
-              <>
-                <Input ariaLabel={`Item ${index + 1} name`} value={item.name} onChange={(name) => change({ name })} placeholder="Paperback" />
-                <Checkbox label="In weekly box" checked={item.inWeeklyBox} onChange={(inWeeklyBox) => change({ inWeeklyBox })} />
-              </>
-            )}
-          />
-        </AdminPanel>
+        <PlansPanel draft={draft} update={update} />
 
         <AdminPanel title="Highlights">
           <p className={styles.note}>Up to four short facts under the hero photo.</p>

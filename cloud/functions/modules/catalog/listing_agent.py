@@ -62,6 +62,9 @@ class ListingContentsItem(Document):
 class ListingItem(Document):
     name: str = Field(description="A concrete thing to stock and pack, e.g. 'Shiraz 75cl'.")
     in_weekly_box: bool = Field(description="Weekly boxes are smaller and only hold some items; monthly boxes hold all of them.")
+    cost_pence: int = Field(
+        description="What one costs to buy, in pence: the average shelf price across Tesco, Sainsbury's, Asda and Morrisons, e.g. 350 for £3.50."
+    )
 
 
 class ListingPrices(Document):
@@ -124,15 +127,18 @@ value = (dream outcome × likelihood it happens) / (time it takes × effort it a
 
 Rules:
 - Everything must be things we could really buy and pack in the UK. No brand names.
-- Specific, never invented: no made-up ratings, reviews, prices of contents, certifications
-  or claims like "vet-approved" or "award-winning".
+- Specific, never invented: no made-up ratings, reviews, certifications or claims like
+  "vet-approved" or "award-winning". Never put what the contents cost in the copy.
+- Cost each packing item at its average UK supermarket shelf price (costPence). Each plan
+  must leave a healthy profit: its items should cost well under half its price.
 - Weekly boxes are a smaller version of the monthly box; price them like the examples.
 - Make the box clearly different from the boxes already on sale.
 """
 
 RESEARCH_INSTRUCTIONS = """
 Before writing, use web_search a couple of times (at most {limit}) to learn what people
-who'd want this box actually love, and which products are typical for it in the UK.
+who'd want this box actually love, which products are typical for it in the UK, and
+what they cost at the big supermarkets.
 Ask plain-language questions. Then write the listing from what you learned.
 """
 
@@ -217,6 +223,12 @@ def _check_listing(listing: GeneratedListing) -> GeneratedListing:
     week, month = listing.prices.week, listing.prices.month
     if not (MIN_PRICE_PENCE <= week < month <= MAX_PRICE_PENCE):
         problems.append(f"prices must be in pence, between {MIN_PRICE_PENCE} and {MAX_PRICE_PENCE}, with weekly below monthly")
+    if any(item.cost_pence <= 0 for item in listing.items):
+        problems.append("give every packing item its average supermarket price in pence")
+    for cadence, price in (("week", week), ("month", month)):
+        cost = sum(item.cost_pence for item in listing.items if cadence == "month" or item.in_weekly_box)
+        if cost >= price:
+            problems.append(f"the {cadence}ly box's items cost {cost}p, more than its {price}p price: cut items or raise the price")
     if problems:
         raise ModelRetry("Please fix the listing: " + "; ".join(problems) + ".")
     return listing

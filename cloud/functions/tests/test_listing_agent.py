@@ -41,10 +41,10 @@ PET_CARE = {
         {"name": "Bandana", "description": "Cotton, one size", "tone": "blush"},
     ],
     "items": [
-        {"name": "Natural chews pack", "inWeeklyBox": True},
-        {"name": "Rope toy", "inWeeklyBox": False},
-        {"name": "Training treats tin", "inWeeklyBox": True},
-        {"name": "Cotton bandana", "inWeeklyBox": False},
+        {"name": "Natural chews pack", "inWeeklyBox": True, "costPence": 250},
+        {"name": "Rope toy", "inWeeklyBox": False, "costPence": 400},
+        {"name": "Training treats tin", "inWeeklyBox": True, "costPence": 300},
+        {"name": "Cotton bandana", "inWeeklyBox": False, "costPence": 350},
     ],
 }
 
@@ -90,7 +90,7 @@ def test_drafts_the_whole_form_from_an_idea_after_researching_it():
     listing = result["listing"]
     assert listing["name"] == "Pet care"
     assert listing["prices"] == {"week": 1300, "month": 2900}
-    assert listing["items"][1] == {"name": "Rope toy", "inWeeklyBox": False}
+    assert listing["items"][1] == {"name": "Rope toy", "inWeeklyBox": False, "costPence": 400}
     # Never a made-up review, and the admin adds the photo.
     assert listing["testimonial"] is None and listing["image"] is None and listing["status"] == "active"
     assert len(calls) == 1
@@ -117,7 +117,8 @@ def test_prompt_shows_the_design_voice_and_the_boxes_already_on_sale():
 def test_the_design_boxes_fit_the_word_limits():
     # The limits come from these boxes; if one grows, raise its limit on purpose.
     for box in starter_boxes():
-        listing = GeneratedListing(**box.model_dump(by_alias=True, exclude={"id", "testimonial", "image", "status", "sort_order", "created_at", "updated_at"}))
+        data = box.model_dump(by_alias=True, exclude={"id", "testimonial", "image", "status", "sort_order", "created_at", "updated_at"})
+        listing = GeneratedListing(**data | {"items": [{**item, "costPence": 100} for item in data["items"]]})  # the design has no costs
         assert _too_long(listing) == [], box.name
 
 
@@ -143,6 +144,9 @@ def test_a_model_failure_becomes_a_friendly_error():
         ({"prices": {"week": 2900, "month": 1300}}, "weekly below monthly"),
         ({"prices": {"week": 13, "month": 29}}, "in pence"),
         ({"items": [{**item, "inWeeklyBox": True} for item in PET_CARE["items"]]}, "some, but not all"),
+        ({"items": [{**item, "costPence": 0} for item in PET_CARE["items"]]}, "average supermarket price"),
+        ({"prices": {"week": 500, "month": 2900}}, "weekly box's items cost 550p"),
+        ({"items": [{**item, "costPence": 800} for item in PET_CARE["items"]]}, "monthly box's items cost 3200p"),
         ({"pitch": "Everything your very good dog could ever possibly want, on repeat."}, "shorten pitch to 7 words"),
         ({"contents": [{**PET_CARE["contents"][0], "description": "Long-lasting, single ingredient, sourced from British farms only"}, *PET_CARE["contents"][1:]]}, r"contents\[0\]\.description"),
     ],
