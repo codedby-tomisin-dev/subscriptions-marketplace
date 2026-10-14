@@ -4,6 +4,7 @@ Apply them UNDER the Firebase trigger decorator. See `.agent/rules/observability
 Span attributes carry request-data keys, never values or auth claims.
 """
 import functools
+import logging
 from typing import Any, Callable
 
 from firebase_functions import https_fn
@@ -82,16 +83,22 @@ def traced_request(handler: Callable[[https_fn.Request], https_fn.Response]) -> 
             try:
                 return handler(req)
             except PermissionError as exc:
-                return make_error_response(_message(exc), status=403)
+                return _rejected(handler.__name__, exc, 403)
             except KeyError as exc:
-                return make_error_response(_message(exc), status=404)
+                return _rejected(handler.__name__, exc, 404)
             except ValueError as exc:
-                return make_error_response(_message(exc), status=400)
+                return _rejected(handler.__name__, exc, 400)
             except Exception:
                 logger.exception("unhandled error in %s", handler.__name__)
                 return make_error_response("Internal error", status=500)
 
     return wrapper
+
+
+def _rejected(name: str, exc: Exception, status: int) -> https_fn.Response:
+    # Logged, since the caller is often a machine (Stripe) whose only clue is the status code.
+    telemetry.event("request_rejected", level=logging.WARNING, handler=name, status=status, reason=_message(exc))
+    return make_error_response(_message(exc), status=status)
 
 
 def _swallowing(kind: str, handler: Callable[[Any], None]) -> Callable[[Any], None]:

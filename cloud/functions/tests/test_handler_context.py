@@ -4,7 +4,7 @@ import pytest
 from firebase_functions import https_fn
 
 from modules.shared.errors import FailedPrecondition
-from modules.shared.handler_context import traced_call, traced_schedule
+from modules.shared.handler_context import traced_call, traced_request, traced_schedule
 
 
 def make_request(uid: str | None = "maya", role: str | None = None, data: dict | None = None):
@@ -82,3 +82,17 @@ def test_scheduled_handlers_swallow_errors():
         raise RuntimeError("boom")
 
     nightly(None)
+
+
+def test_rejected_requests_are_logged_with_their_reason(monkeypatch):
+    logged = []
+    monkeypatch.setattr("core.telemetry.event", lambda name, **fields: logged.append((name, fields)))
+
+    @traced_request
+    def webhook(req):
+        raise ValueError("Invalid Stripe signature")
+
+    response = webhook(SimpleNamespace(method="POST"))
+    assert response.status_code == 400
+    rejected = [fields for name, fields in logged if name == "request_rejected"]
+    assert rejected == [{"level": rejected[0]["level"], "handler": "webhook", "status": 400, "reason": "Invalid Stripe signature"}]
