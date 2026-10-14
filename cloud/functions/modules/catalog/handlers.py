@@ -1,4 +1,4 @@
-from firebase_functions import https_fn
+from firebase_functions import https_fn, options
 from pydantic_ai.models.openai import OpenAIResponsesModel
 from pydantic_ai.providers.openai import OpenAIProvider
 
@@ -45,8 +45,12 @@ def build_listing_agent() -> ListingAgent:
     return ListingAgent(model, ParallelSearchClient(config.parallel_search_api_key()))
 
 
-# A draft with research takes a minute or so; the default callable timeout is 60s.
-@https_fn.on_call(timeout_sec=180)
+# AI calls need more than the defaults: a draft with research takes a minute or so (default timeout 60s),
+# and the OpenAI and PydanticAI libraries alone use most of the default 256 MiB, which kills the instance.
+AI_CALL = {"timeout_sec": 180, "memory": options.MemoryOption.GB_1}
+
+
+@https_fn.on_call(**AI_CALL)
 @traced_call(require_admin=True)
 def admin_generate_box_listing(req: https_fn.CallableRequest) -> dict:
     """{idea} → {listing, sources}: a draft for the New box form. Saves nothing."""
@@ -64,8 +68,7 @@ def build_illustration_service() -> IllustrationService:
     )
 
 
-# Image models take up to a minute or so at this size.
-@https_fn.on_call(timeout_sec=180)
+@https_fn.on_call(**AI_CALL)
 @traced_call(require_admin=True)
 def admin_generate_box_illustration(req: https_fn.CallableRequest) -> dict:
     """{name, audience, objects, tone} → {illustration: url}. Uploads the picture; the box saves it."""
