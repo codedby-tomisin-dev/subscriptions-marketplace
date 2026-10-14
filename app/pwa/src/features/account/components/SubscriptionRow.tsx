@@ -2,7 +2,7 @@ import Link from "next/link";
 import clsx from "clsx";
 import { Calendar, CreditCard, History, Pause, Play, RotateCcw, SkipForward } from "lucide-react";
 import { Button, ProductImage, Tabs } from "@/components/ui";
-import { CADENCE_COPY, type Box, type Cadence } from "@/features/catalog";
+import { boxArt, CADENCE_COPY, type Box, type Cadence } from "@/features/catalog";
 import { nextBoxArrives, type Subscription } from "@/features/subscriptions";
 import { toneSurface } from "@/shared/types";
 import { formatDay, formatMonthYear, formatPrice, formatShortDate } from "@/shared/utils";
@@ -76,7 +76,7 @@ export function SubscriptionRow({ subscription, box, onCadenceChange, onSkip, on
   return (
     <article className={clsx(styles.row, !isLive && styles.ended)}>
       <Link href={`/boxes/${box.id}`} className={styles.thumb} style={{ background: toneSurface(box.tone) }} aria-label={`View the ${box.name} box`}>
-        <ProductImage src={box.image} tone={box.tone} ratio="1 / 1" radius="var(--radius-md)" label={box.name} background="var(--cream-0)" sizes="120px" />
+        <ProductImage src={boxArt(box)} tone={box.tone} ratio="1 / 1" radius="var(--radius-md)" label={box.name} background="var(--cream-0)" sizes="120px" />
       </Link>
 
       <div className={styles.details}>

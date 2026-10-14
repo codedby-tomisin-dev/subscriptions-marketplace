@@ -2,7 +2,7 @@ import { collection, doc, getDoc, getDocs, onSnapshot } from "firebase/firestore
 import { firestore } from "@/shared/api";
 import type { Box } from "./types";
 
-const toBox = (id: string, data: object) => ({ id, image: null, testimonial: null, ...data }) as Box;
+const toBox = (id: string, data: object) => ({ id, illustration: null, image: null, testimonial: null, ...data }) as Box;
 
 export const sortBoxes = (boxes: Box[]) => [...boxes].sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name));
 

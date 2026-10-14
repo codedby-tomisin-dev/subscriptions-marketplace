@@ -50,7 +50,10 @@ Archiving takes a box off the storefront; existing subscriptions carry on. Photo
 OPENAI_API_KEY=sk-...
 PARALLEL_SEARCH_API_KEY=...        # optional: without it, the agent drafts without researching
 OPENAI_LISTING_MODEL=gpt-5.6-luna  # optional override
+OPENAI_IMAGE_MODEL=gpt-image-2     # optional override, for illustrations
 ```
+
+**Illustrations:** every box has an illustration (`illustration`) for its tile and the top of its page, and optionally a real photo (`image`) that leads the gallery. A drafted listing gets its illustration drawn straight after; any box can be redrawn from the editor's Illustration panel. `modules/catalog/illustrations.py` fills the brand's illustration brief from the box's name, audience, contents and colour, draws it with an OpenAI image model and saves it to Storage under `boxes/illustrations/`. The five launch boxes use the design's SVGs in `app/pwa/public/illustrations/`; `scripts/seed_catalog.py` adds them to boxes that don't have one yet.
 
 **Fresh project:** load the five starter boxes once with `venv/bin/python scripts/seed_catalog.py --live --project subscription-business-511510`. It skips boxes that already exist. `scripts/seed_stripe.py` creates their Stripe prices; boxes made in the admin sync their own.
 

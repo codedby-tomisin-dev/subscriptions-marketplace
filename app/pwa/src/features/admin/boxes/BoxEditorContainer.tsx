@@ -70,6 +70,8 @@ export function BoxEditorContainer({ boxId, startGenerating = false }: BoxEditor
           onPhoto={editor.uploadPhoto}
           isUploading={editor.isUploading}
           sources={editor.sources}
+          onDraw={editor.drawIllustration}
+          isDrawing={editor.isDrawing}
         />
       </form>
       {/* Outside the form: React submit events bubble through portals, and this one mustn't save the box. */}
@@ -85,9 +87,11 @@ interface FieldsProps {
   isUploading: boolean;
   /** Pages the listing agent read for the current draft. */
   sources: ListingSource[];
+  onDraw: () => void;
+  isDrawing: boolean;
 }
 
-function BoxEditorFields({ draft, update, onPhoto, isUploading, sources }: FieldsProps) {
+function BoxEditorFields({ draft, update, onPhoto, isUploading, sources, onDraw, isDrawing }: FieldsProps) {
   const fileInput = useRef<HTMLInputElement>(null);
   const pickPhoto = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -219,7 +223,33 @@ function BoxEditorFields({ draft, update, onPhoto, isUploading, sources }: Field
       </div>
 
       <aside className={styles.side}>
+        <AdminPanel title="Illustration">
+          <p className={styles.note}>On the box tile and at the top of the box page. Drawn from the name, colour and what’s inside.</p>
+          <div className={styles.illustration} aria-busy={isDrawing}>
+            <ProductImage
+              src={draft.illustration}
+              alt={draft.illustration ? `${draft.name} box illustration` : undefined}
+              tone={draft.tone}
+              ratio="1 / 1"
+              radius="var(--radius-md)"
+              label={isDrawing ? "Drawing… about a minute" : "No illustration yet"}
+              background="var(--cream-0)"
+              sizes="320px"
+            />
+          </div>
+          <div className={styles.photoActions}>
+            <Button size="sm" variant="secondary" iconLeft={Sparkles} onClick={onDraw} loading={isDrawing}>
+              {draft.illustration ? "Redraw" : "Draw illustration"}
+            </Button>
+            {draft.illustration && !isDrawing && (
+              <Button size="sm" variant="ghost" iconLeft={X} onClick={() => update({ illustration: null })}>
+                Remove
+              </Button>
+            )}
+          </div>
+        </AdminPanel>
         <AdminPanel title="Photo">
+          <p className={styles.note}>A real photo, if you have one. It leads the gallery on the box page.</p>
           <div className={styles.photo} style={{ background: toneSurface(draft.tone) }}>
             <ProductImage src={draft.image} tone={draft.tone} ratio="4 / 5" radius="var(--radius-md)" label={draft.shotDescription || draft.name} background="var(--cream-0)" sizes="320px" />
           </div>

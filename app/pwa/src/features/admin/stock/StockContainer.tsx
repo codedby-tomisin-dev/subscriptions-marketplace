@@ -2,7 +2,7 @@
 
 import { Check, Pencil, Plus, Sparkles, TriangleAlert } from "lucide-react";
 import { Badge, Button, ProductImage } from "@/components/ui";
-import { useCatalog } from "@/features/catalog";
+import { boxArt, useCatalog } from "@/features/catalog";
 import { toneSurface } from "@/shared/types";
 import { formatPrice } from "@/shared/utils";
 import type { StockItem, StockReport } from "../api";
@@ -50,7 +50,7 @@ function StockView({ report, onReorder, reorderingId }: StockViewProps) {
             <div className={styles.box}>
               <div className={styles.summary}>
                 <div className={styles.image} style={{ background: toneSurface(box.tone) }}>
-                  <ProductImage src={box.image} tone={box.tone} ratio="4 / 3" radius="var(--radius-md)" label={box.name} background="var(--cream-0)" sizes="240px" />
+                  <ProductImage src={boxArt(box)} tone={box.tone} ratio="4 / 3" radius="var(--radius-md)" label={box.name} background="var(--cream-0)" sizes="240px" />
                 </div>
                 <div className={styles.titleLine}>
                   <h2 className={admin.h2}>{box.name}</h2>

@@ -5,6 +5,7 @@
     "tone": "plum",
     "audience": "For the two of you",
     "shotDescription": "Candles, two glasses, card game, silk ribbon",
+    "illustration": "/illustrations/datenight.svg",
     "prices": {
       "week": 1900,
       "month": 3900
@@ -121,6 +122,7 @@
     "tone": "sage",
     "audience": "For a slow Sunday",
     "shotDescription": "Bath soak, eye mask, journal, tea tin",
+    "illustration": "/illustrations/selfcare.svg",
     "prices": {
       "week": 1500,
       "month": 3200
@@ -232,6 +234,7 @@
     "tone": "blush",
     "audience": "For your shelfie",
     "shotDescription": "Five full-size skincare and makeup treats",
+    "illustration": "/illustrations/beauty.svg",
     "prices": {
       "week": 1400,
       "month": 2800
@@ -333,6 +336,7 @@
     "tone": "apricot",
     "audience": "For the 4pm slump",
     "shotDescription": "Small-batch chocolate, crisps, cookies",
+    "illustration": "/illustrations/snacks.svg",
     "prices": {
       "week": 1200,
       "month": 2600
@@ -434,6 +438,7 @@
     "tone": "lilac",
     "audience": "For your nest",
     "shotDescription": "Candle, linen spray, ceramic dish, plant",
+    "illustration": "/illustrations/home.svg",
     "prices": {
       "week": 1600,
       "month": 3400

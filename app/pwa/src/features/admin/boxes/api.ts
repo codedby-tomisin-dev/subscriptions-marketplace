@@ -1,6 +1,7 @@
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import type { Box, BoxStatus } from "@/features/catalog";
 import { callFunction, cloudStorage } from "@/shared/api";
+import type { SurfaceTone } from "@/shared/types";
 
 /** A box as the editor sends it: no id when creating; item ids only for existing items. */
 export type BoxPayload = Omit<Box, "id" | "items"> & { id?: string; items: { id?: string; name: string; inWeeklyBox: boolean }[] };
@@ -17,8 +18,8 @@ export const saveBox = (box: BoxPayload) => callFunction<{ box: BoxPayload }, Sa
 export const setBoxStatus = (boxId: string, status: BoxStatus) =>
   callFunction<{ boxId: string; status: BoxStatus }, { ok: boolean }>("admin_set_box_status", { boxId, status });
 
-/** A drafted listing: the form's fields with prices in pence, but no id, photo or testimonial. */
-export type GeneratedListing = Omit<BoxPayload, "id" | "sortOrder">;
+/** A drafted listing: the form's fields with prices in pence, but no id, pictures or testimonial. */
+export type GeneratedListing = Omit<BoxPayload, "id" | "sortOrder" | "illustration">;
 
 export interface ListingSource {
   title: string;
@@ -30,6 +31,17 @@ const GENERATE_TIMEOUT_MS = 180_000;
 
 export const generateListing = (idea: string) =>
   callFunction<{ idea: string }, { listing: GeneratedListing; sources: ListingSource[] }>("admin_generate_box_listing", { idea }, GENERATE_TIMEOUT_MS);
+
+export interface IllustrationRequest {
+  name: string;
+  audience: string;
+  tone: SurfaceTone;
+  /** What to draw on the shelf: the box's contents, a few at most. */
+  objects: string[];
+}
+
+export const generateIllustration = (request: IllustrationRequest) =>
+  callFunction<IllustrationRequest, { illustration: string }>("admin_generate_box_illustration", request, GENERATE_TIMEOUT_MS);
 
 const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
 

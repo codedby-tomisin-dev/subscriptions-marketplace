@@ -28,6 +28,16 @@ def listing_model() -> str:
     return os.getenv("OPENAI_LISTING_MODEL") or "gpt-5.6-luna"
 
 
+def image_model() -> str:
+    """The OpenAI image model that draws box illustrations in the admin."""
+    return os.getenv("OPENAI_IMAGE_MODEL") or "gpt-image-2"
+
+
+def storage_emulator_host() -> str | None:
+    """host:port of the Storage emulator, when running under it."""
+    return os.getenv("FIREBASE_STORAGE_EMULATOR_HOST") or None
+
+
 def parallel_search_api_key() -> str:
     """Parallel.ai web search, used by the listing agent to research an idea. Optional."""
     return os.getenv("PARALLEL_SEARCH_API_KEY", "")

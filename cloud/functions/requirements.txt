@@ -12,5 +12,6 @@ pydantic-ai-slim[openai]==1.62.0
 # 1.62.0 can't accept, and token counts then silently read as 0.
 genai-prices==0.0.73
 requests>=2.31.0
+certifi>=2024.2.2
 stripe>=16.0.0
 logfire>=5.0.0

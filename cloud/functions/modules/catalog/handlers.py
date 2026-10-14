@@ -5,6 +5,7 @@ from pydantic_ai.providers.openai import OpenAIProvider
 from core import config
 from core.firestore import get_db
 from modules.billing.wiring import stripe_gateway
+from modules.catalog.illustrations import IllustrationService, IllustrationsNotConfigured, OpenAIImages, StorageUploader
 from modules.catalog.listing_agent import ListingAgent, ListingNotConfigured
 from modules.catalog.repository import CatalogRepository
 from modules.catalog.service import CatalogService
@@ -52,3 +53,20 @@ def admin_generate_box_listing(req: https_fn.CallableRequest) -> dict:
     idea = str((req.data or {}).get("idea") or "")
     catalog = CatalogRepository(get_db()).load().all()
     return build_listing_agent().draft(idea, catalog)
+
+
+def build_illustration_service() -> IllustrationService:
+    if not config.openai_api_key():
+        raise IllustrationsNotConfigured()
+    return IllustrationService(
+        OpenAIImages(config.openai_api_key(), config.image_model()),
+        StorageUploader(config.storage_emulator_host()),
+    )
+
+
+# Image models take up to a minute or so at this size.
+@https_fn.on_call(timeout_sec=180)
+@traced_call(require_admin=True)
+def admin_generate_box_illustration(req: https_fn.CallableRequest) -> dict:
+    """{name, audience, objects, tone} → {illustration: url}. Uploads the picture; the box saves it."""
+    return build_illustration_service().draw(req.data or {})

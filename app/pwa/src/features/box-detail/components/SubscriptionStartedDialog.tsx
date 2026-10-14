@@ -1,5 +1,5 @@
 import { Button, Dialog, ProductImage } from "@/components/ui";
-import { CADENCE_COPY, type Box } from "@/features/catalog";
+import { boxArt, CADENCE_COPY, type Box } from "@/features/catalog";
 import { nextBoxArrives, type Subscription } from "@/features/subscriptions";
 import { toneSurface } from "@/shared/types";
 import { formatDay, formatPrice } from "@/shared/utils";
@@ -52,7 +52,7 @@ export function SubscriptionStartedDialog({ box, isWaiting, subscription, onClos
       {subscription && copy && (
         <div className={styles.summary} style={{ background: toneSurface(box.tone) }}>
           <div className={styles.thumb}>
-            <ProductImage src={box.image} tone={box.tone} ratio="1 / 1" radius={12} sizes="64px" />
+            <ProductImage src={boxArt(box)} tone={box.tone} ratio="1 / 1" radius={12} sizes="64px" />
           </div>
           <div className={styles.text}>
             <b className={styles.name}>{box.name}</b>

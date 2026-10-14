@@ -4,7 +4,7 @@ import { ArrowUpRight } from "lucide-react";
 import { Badge, ProductImage } from "@/components/ui";
 import { toneSurface } from "@/shared/types";
 import { formatPrice } from "@/shared/utils";
-import type { Box } from "../types";
+import { boxArt, type Box } from "../types";
 import styles from "./BoxTile.module.css";
 
 interface BoxTileProps {
@@ -25,12 +25,12 @@ export function BoxTile({ box, index, offset = 0, featured = false }: BoxTilePro
       style={{ marginTop: offset, animationDelay: `${120 + index * 60}ms`, background: toneSurface(box.tone) }}
     >
       <ProductImage
-        src={box.image}
-        alt={`${box.name} box`}
+        src={boxArt(box)}
+        alt={`${box.name} box illustration`}
         tone={box.tone}
         ratio="1 / 1"
         radius="var(--radius-lg)"
-        label={box.shotDescription}
+        label={`Illustration · ${box.name.toLowerCase()} box`}
         background="var(--cream-0)"
         sizes={featured ? "(max-width: 640px) 100vw, 20vw" : "(max-width: 640px) 50vw, (max-width: 760px) 42vw, 20vw"}
       >

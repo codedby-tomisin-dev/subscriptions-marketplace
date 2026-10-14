@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import { Star } from "lucide-react";
 import { Button, ProductImage } from "@/components/ui";
-import type { Box } from "@/features/catalog";
+import { boxArt, type Box } from "@/features/catalog";
 import { formatDay, formatPrice, formatShortDate } from "@/shared/utils";
 import { customerOrderStage, type CustomerOrderStage, type Order } from "@/features/orders";
 import { StatusBadge } from "./StatusBadge";
@@ -19,7 +19,7 @@ export function OrderRow({ order, box }: { order: Order; box: Box }) {
   return (
     <article className={styles.row}>
       <div className={styles.thumb}>
-        <ProductImage src={box.image} tone={box.tone} ratio="1 / 1" radius={14} sizes="56px" />
+        <ProductImage src={boxArt(box)} tone={box.tone} ratio="1 / 1" radius={14} sizes="56px" />
       </div>
       <div className={styles.identity}>
         <span className={styles.name}>{box.name}</span>

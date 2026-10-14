@@ -4,10 +4,34 @@
   padding: 24px 0 48px;
 }
 
+.introGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 32px;
+}
+
 .introCopy {
   display: flex;
   flex-direction: column;
   gap: 18px;
+  min-width: 0;
+}
+
+/* A tilted card, dealt onto the band a beat after the headline. */
+.introIllustration {
+  width: clamp(160px, 17.6vw, 256px);
+  height: auto;
+  aspect-ratio: 1;
+  border: 4px solid var(--border-default);
+  border-radius: var(--radius-2xl);
+  background: var(--cream-0);
+  transform: rotate(3deg);
+  animation: dealIn 720ms var(--ease-spring) 200ms both;
+}
+
+@keyframes dealIn {
+  from { opacity: 0; transform: translateY(16px) rotate(-4deg) scale(.92); }
 }
 
 .breadcrumb {
@@ -322,6 +346,9 @@
 
 /* One column: photos, then the buy panel, then the story. */
 @media (max-width: 860px) {
+  .introGrid { grid-template-columns: minmax(0, 1fr); }
+  .introIllustration { order: -1; width: 144px; transform: rotate(-3deg); }
+
   .layout { grid-template-columns: minmax(0, 1fr); }
   .layout > *, .story > * { min-width: 0; }
   .story { display: contents; }
@@ -524,4 +551,5 @@
 
 @media (prefers-reduced-motion: reduce) {
   .ritualCard { transition: none; }
+  .introIllustration { animation: none; }
 }

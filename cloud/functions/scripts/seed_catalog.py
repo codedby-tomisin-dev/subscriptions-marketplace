@@ -1,4 +1,5 @@
-"""Loads the five starter boxes into `boxes/` (and their inventory items). Skips boxes that exist.
+"""Loads the five starter boxes into `boxes/` (and their inventory items). Skips boxes that exist,
+except to give one the design's illustration if it has none yet.
 
     venv/bin/python scripts/seed_catalog.py                                   # emulators
     venv/bin/python scripts/seed_catalog.py --live                            # the real project, once
@@ -23,8 +24,13 @@ from modules.shared.clock import timestamp  # noqa: E402
 def seed_catalog(db, overwrite: bool = False) -> list[str]:
     repo, inventory = CatalogRepository(db), InventoryRepository(db)
     added = []
+    catalog = repo.load()
     for box in starter_boxes():
         if repo.exists(box.id) and not overwrite:
+            existing = catalog.get(box.id)
+            if not existing.illustration and box.illustration:
+                repo.save(existing.model_copy(update={"illustration": box.illustration, "updated_at": timestamp()}))
+                added.append(f"{box.id} (illustration)")
             continue
         now = timestamp()
         box = box.model_copy(update={"created_at": now, "updated_at": now})

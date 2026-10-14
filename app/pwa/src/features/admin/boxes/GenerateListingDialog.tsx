@@ -31,7 +31,7 @@ export function GenerateListingDialog({ open, onClose, onGenerated }: GenerateLi
       showToast({
         tone: "success",
         title: `${listing.name} drafted`,
-        message: `${sources.length ? `Researched ${sources.length} source${sources.length > 1 ? "s" : ""}. ` : ""}Check it over and add a photo, then create the box.`,
+        message: `${sources.length ? `Researched ${sources.length} source${sources.length > 1 ? "s" : ""}. ` : ""}Its illustration is being drawn now. Check it over, then create the box.`,
       });
       setIdea("");
       onClose();

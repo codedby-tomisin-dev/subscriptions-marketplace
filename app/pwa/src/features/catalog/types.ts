@@ -28,6 +28,9 @@ export interface BoxInventoryItem {
   inWeeklyBox: boolean;
 }
 
+/** The picture that stands for a box in tiles and thumbnails: its illustration, else its photo. */
+export const boxArt = (box: Pick<Box, "illustration" | "image">) => box.illustration ?? box.image;
+
 export type BoxStatus = "active" | "archived";
 
 /** `boxes/{id}`, edited in the admin (cloud/functions/modules/catalog). */
@@ -35,7 +38,9 @@ export interface Box {
   id: string;
   name: string;
   tone: SurfaceTone;
-  /** Photo URL; falls back to a tinted placeholder. */
+  /** Drawn illustration: the box tile and the page's hero. Generated in the admin, or the design's SVGs. */
+  illustration: string | null;
+  /** Photo URL, uploaded by hand; leads the box page's gallery. Falls back to a tinted placeholder. */
   image: string | null;
   /** "For the two of you" */
   audience: string;

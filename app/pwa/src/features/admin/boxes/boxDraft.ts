@@ -7,6 +7,7 @@ export interface BoxDraft {
   id?: string;
   name: string;
   tone: SurfaceTone;
+  illustration: string | null;
   image: string | null;
   audience: string;
   shotDescription: string;
@@ -38,6 +39,7 @@ export function emptyDraft(sortOrder: number): BoxDraft {
   return {
     name: "",
     tone: "blush",
+    illustration: null,
     image: null,
     audience: "",
     shotDescription: "",
@@ -64,11 +66,12 @@ export function draftFromBox(box: Box): BoxDraft {
   };
 }
 
-/** A drafted listing as form state. Keeps the photo and position already in the form. */
+/** A drafted listing as form state. Keeps the pictures and position already in the form. */
 export function draftFromListing(listing: GeneratedListing, current: BoxDraft): BoxDraft {
   return {
     ...current,
     ...listing,
+    illustration: current.illustration,
     image: current.image,
     prices: { week: toPounds(listing.prices.week), month: toPounds(listing.prices.month) },
     testimonial: { quote: "", attribution: "" },

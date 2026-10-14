@@ -79,6 +79,9 @@ class Box(Document):
     tone: Tone
     audience: str
     shot_description: str = ""
+    # The box tile and the page's hero: drawn by the admin's illustration agent, or the design's SVGs.
+    illustration: str | None = None
+    # A real photo, uploaded by hand; the box page's gallery leads with it.
     image: str | None = None
     prices: dict[Cadence, int]
     plan_notes: dict[Cadence, str]

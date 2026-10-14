@@ -2,7 +2,7 @@ import { useId, type Ref } from "react";
 import { Repeat, X } from "lucide-react";
 import { Button, IconButton, ProductImage, Sheet, Switch, Tag } from "@/components/ui";
 import { PartnerLogos, Stars, STORE_RATING } from "@/components/trust";
-import { CADENCE_COPY, type Box, type Cadence } from "@/features/catalog";
+import { boxArt, CADENCE_COPY, type Box, type Cadence } from "@/features/catalog";
 import { toneSurface } from "@/shared/types";
 import { formatDay, formatPrice } from "@/shared/utils";
 import { CadenceOption } from "./CadenceOption";
@@ -80,7 +80,7 @@ export function PurchasePanel({
       <div className={styles.panelHead}>
         {onClose && (
           <div className={styles.sheetThumb} style={{ background: toneSurface(box.tone) }}>
-            <ProductImage src={box.image} tone={box.tone} ratio="1 / 1" radius={10} sizes="52px" />
+            <ProductImage src={boxArt(box)} tone={box.tone} ratio="1 / 1" radius={10} sizes="52px" />
           </div>
         )}
         <div className={styles.panelIdentity}>

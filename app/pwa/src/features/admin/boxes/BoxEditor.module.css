@@ -156,3 +156,20 @@
 .sources svg {
   flex: none;
 }
+
+.illustration {
+  margin-top: 12px;
+  border-radius: var(--radius-md);
+}
+
+.illustration[aria-busy="true"] {
+  animation: drawing 1.6s var(--ease-out) infinite alternate;
+}
+
+@keyframes drawing {
+  to { opacity: .55; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .illustration[aria-busy="true"] { animation: none; }
+}

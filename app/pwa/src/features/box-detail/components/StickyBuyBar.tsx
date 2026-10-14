@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import { Button, ProductImage } from "@/components/ui";
-import type { Box } from "@/features/catalog";
+import { boxArt, type Box } from "@/features/catalog";
 import { formatPrice } from "@/shared/utils";
 import styles from "./StickyBuyBar.module.css";
 
@@ -27,7 +27,7 @@ export function StickyBuyBar({ box, visible, isPhone, onAction }: StickyBuyBarPr
       ) : (
         <>
           <div className={styles.thumb}>
-            <ProductImage src={box.image} tone={box.tone} ratio="1 / 1" radius={12} sizes="44px" />
+            <ProductImage src={boxArt(box)} tone={box.tone} ratio="1 / 1" radius={12} sizes="44px" />
           </div>
           <div className={styles.text}>
             <span className={styles.name}>{box.name}</span>
