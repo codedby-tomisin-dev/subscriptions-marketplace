@@ -122,6 +122,12 @@
 
 @media (max-width: 640px) {
   .row { grid-template-columns: 84px minmax(0, 1fr); }
+
+  /* Name, price, then status, stacked beside the picture. */
+  .details { align-items: flex-start; }
+  .titleLine { display: contents; }
+  .titleLine > :last-child { order: 1; }
+  .planNote { display: none; }
   .thumb { padding: 5px; }
   .price { font-size: 20px; }
   .plan { font-size: 13px; }

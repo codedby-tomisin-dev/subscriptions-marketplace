@@ -381,9 +381,12 @@
     padding: calc(var(--nav-height) + 16px) 0 28px;
   }
 
-  .introCopy { gap: 14px; }
+  /* Centred, like an app's product card: the tilted illustration above the pitch. */
+  .introGrid { gap: 18px; }
+  .introCopy { gap: 14px; align-items: center; text-align: center; }
   .introCopy h1 { font-size: 42px !important; line-height: 1.02; }
   .introCopy p { font-size: 16px; }
+  .introIllustration { justify-self: center; width: 150px; border-radius: var(--radius-xl); }
   .breadcrumb { display: none; }
 
   .layout {
