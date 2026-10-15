@@ -46,10 +46,15 @@ a:hover {
 /* Page-level layout & type helpers shared across features.
    Override individual properties with inline styles, not competing classes. */
 
+:root {
+  /* Page side padding. Rows that run to the screen edge on phones use it too. */
+  --gutter: clamp(20px, 3vw, 48px);
+}
+
 .bb-container {
   max-width: var(--page-max);
   margin-inline: auto;
-  padding-inline: clamp(20px, 3vw, 48px);
+  padding-inline: var(--gutter);
 }
 
 .bb-container-narrow {
@@ -93,8 +98,8 @@ a:hover {
 }
 
 @media (max-width: 640px) {
-  .bb-container {
-    padding-inline: 20px;
+  :root {
+    --gutter: 28px;
   }
 
   .bb-heading {

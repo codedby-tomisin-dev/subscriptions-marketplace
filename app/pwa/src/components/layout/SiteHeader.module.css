@@ -45,7 +45,7 @@
 @media (max-width: 640px) {
   .nav {
     gap: 12px;
-    padding: 0 12px 0 20px;
+    padding: 0 16px 0 var(--gutter);
   }
 
   .wordmark,

@@ -311,7 +311,7 @@
 .others {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 20px;
+  gap: 24px;
 }
 
 /* The ritual stacks when the story column is narrow, even beside the panel. */
@@ -403,10 +403,10 @@
   .track {
     display: flex;
     gap: 10px;
-    padding: 0 20px;
+    padding: 0 var(--gutter);
     overflow-x: auto;
     scroll-snap-type: x mandatory;
-    scroll-padding: 0 20px;
+    scroll-padding: 0 var(--gutter);
     scrollbar-width: none;
   }
 
@@ -442,7 +442,7 @@
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 12px;
-    margin: 10px 20px 0;
+    margin: 10px var(--gutter) 0;
     padding-top: 24px;
   }
 
@@ -458,7 +458,7 @@
   .factIcon { box-shadow: var(--shadow-xs); }
 
   .section {
-    padding: 88px 20px 0;
+    padding: 88px var(--gutter) 0;
   }
 
   /* Ritual: snapshots zigzag down a dashed line. */
@@ -512,12 +512,12 @@
   .contents,
   .others {
     display: flex;
-    gap: 12px;
-    margin: 0 -20px;
-    padding: 12px 20px 8px;
+    gap: 16px;
+    margin: 0 calc(-1 * var(--gutter));
+    padding: 12px var(--gutter) 8px;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
-    scroll-padding: 0 20px;
+    scroll-padding: 0 var(--gutter);
     scrollbar-width: none;
   }
 

@@ -38,7 +38,7 @@
 .boxRow {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 16px;
+  gap: 24px;
   align-items: start;
   margin-top: clamp(32px, 6.5vh, 60px);
 }
@@ -103,7 +103,7 @@
 @media (min-width: 641px) and (max-width: 760px) {
   .boxRow {
     display: flex;
-    gap: 14px;
+    gap: 20px;
     margin-inline: -20px;
     padding: 0 20px 8px;
     overflow-x: auto;
@@ -142,8 +142,8 @@
 
   .boxRow {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
-    margin: 32px -8px 0;
+    gap: 16px;
+    margin: 32px 0 0;
   }
 
   .boxRow > * { margin-top: 0 !important; }

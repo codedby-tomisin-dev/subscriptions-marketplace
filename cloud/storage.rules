@@ -12,7 +12,7 @@ service firebase.storage {
     }
 
     match /{allPaths=**} {
-      allow read, write: if false;
+      allow read, write: if true;
     }
   }
 }
