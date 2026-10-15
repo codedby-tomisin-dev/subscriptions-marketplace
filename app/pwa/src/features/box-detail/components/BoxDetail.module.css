@@ -135,7 +135,7 @@
   gap: 12px;
 }
 
-/* Ritual: three snapshots on a dashed trail */
+/* Ritual: three lined notes, taped up along a dashed trail */
 
 .ritualIntro {
   max-width: 620px;
@@ -149,10 +149,10 @@
 .ritualRow {
   position: relative;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: clamp(20px, 3cqw, 48px);
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 40px clamp(16px, 2cqw, 28px);
   margin: 0;
-  padding: 0 4px 72px;
+  padding: 0;
   list-style: none;
 }
 
@@ -161,21 +161,60 @@
   position: absolute;
   left: 8%;
   right: 8%;
-  top: 42%;
+  top: 50%;
   border-top: 3px dashed var(--cocoa-700);
   opacity: 0.55;
 }
 
+/* `--tape` is the box's colour; it tints the paper's lines and the tape. */
 .ritualCard {
   position: relative;
   z-index: 1;
-  margin-top: var(--drop);
-  padding: 14px 14px 22px;
-  background: var(--cream-0);
-  border-radius: 10px;
-  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 28px 20px 26px;
+  background-color: var(--cream-50);
+  background-image:
+    repeating-linear-gradient(to bottom, transparent 0 27px, color-mix(in oklch, var(--tape) 22%, transparent) 27px 28px),
+    radial-gradient(120% 80% at 0% 0%, rgba(255, 255, 255, .7), transparent 60%);
+  background-position: 0 12px, 0 0;
+  border-radius: 3px;
+  box-shadow: 0 1px 0 rgba(74, 44, 30, .06), 0 0 0 1px rgba(74, 44, 30, .06);
   transform: rotate(var(--tilt));
   transition: transform var(--dur-med, 300ms) var(--ease-out);
+}
+
+/* A strip of tape holding the note up. */
+.ritualCard::before {
+  content: "";
+  position: absolute;
+  z-index: 3;
+  top: -10px;
+  left: 50%;
+  width: 84px;
+  height: 22px;
+  transform: translateX(-50%) rotate(-3deg);
+  background: color-mix(in oklch, var(--tape) 55%, transparent);
+  background-image: repeating-linear-gradient(90deg, rgba(255, 255, 255, .25) 0 4px, transparent 4px 9px);
+  clip-path: polygon(3% 0, 97% 4%, 100% 50%, 96% 100%, 2% 96%, 0 50%);
+}
+
+.ritualCard:nth-child(odd)::before {
+  left: 28%;
+  transform: translateX(-50%) rotate(4deg);
+}
+
+/* A torn-off, scalloped bottom edge. */
+.ritualCard::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -7px;
+  height: 8px;
+  background: radial-gradient(circle at 5px 0, var(--cream-50) 4.5px, transparent 5px) 0 0 / 10px 8px repeat-x;
 }
 
 .ritualCard:hover {
@@ -183,20 +222,29 @@
 }
 
 .ritualNumber {
-  position: absolute;
-  z-index: 2;
-  top: -52px;
-  left: -14px;
-  font: 800 112px/1 var(--font-display);
+  flex: 0 0 auto;
+  margin-top: -6px;
+  font: 800 64px/.9 var(--font-display);
   letter-spacing: -0.06em;
   color: transparent;
   -webkit-text-stroke: 2px;
   pointer-events: none;
 }
 
+/* Phones only: the snapshot photo. */
+.ritualPhoto {
+  display: none;
+}
+
+.ritualText {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
 .ritualTitle {
   margin: 0;
-  padding: 18px 6px 0;
   font: var(--type-h3);
   letter-spacing: var(--tracking-heading);
   color: var(--text-strong);
@@ -204,14 +252,13 @@
 
 .ritualBody {
   margin: 0;
-  padding: 8px 6px 0;
   font-size: 15px;
   line-height: 1.55;
   color: var(--text-muted);
   text-wrap: pretty;
 }
 
-/* What's inside */
+/* What's inside: a packing slip */
 
 .contentsHead {
   display: flex;
@@ -229,10 +276,83 @@
   color: var(--text-muted);
 }
 
-.contents {
+.slip {
+  position: relative;
+  padding: 22px 28px 10px;
+  background: var(--cream-0);
+  border: 2px solid var(--cocoa-900);
+  border-radius: var(--radius-lg);
+  box-shadow: 5px 5px 0 var(--blush-200);
+}
+
+.slipHead {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  padding-bottom: 6px;
+  font: 500 12px var(--font-mono);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.slipList {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 40px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.slipList li {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  min-width: 0;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.slipNumber {
+  flex: 0 0 auto;
+  align-self: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font: 600 11px var(--font-mono);
+}
+
+.slipName {
+  flex: 0 0 auto;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+/* Dotted leader between the item and its note, like a receipt. */
+.slipLeader {
+  flex: 1 1 12px;
+  min-width: 12px;
+  border-bottom: 2px dotted var(--border-default);
+  transform: translateY(-4px);
+}
+
+.slipDescription {
+  flex: 0 1 auto;
+  min-width: 0;
+  font-size: 14px;
+  color: var(--text-muted);
+  text-align: right;
+}
+
+/* Phones only: picture cards in a swipe row. */
+.contents {
+  display: none;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -314,26 +434,20 @@
   gap: 24px;
 }
 
-/* The ritual stacks when the story column is narrow, even beside the panel. */
+/* A narrow story column (even beside the panel) stacks the notes and the slip. */
 @container (max-width: 620px) {
-  .ritualRow {
-    grid-template-columns: 1fr;
-    gap: 72px;
-    padding: 24px 24px 72px;
-  }
+  .ritualRow { grid-template-columns: minmax(0, 1fr); max-width: 520px; margin: 0 auto; }
+  .ritualRow::before { display: none; }
+  .ritualCard { flex-direction: row; gap: 16px; }
+  .slipList { grid-template-columns: minmax(0, 1fr); }
+  .slip { padding: 18px 18px 6px; }
+}
 
-  .ritualRow::before {
-    left: 50%;
-    right: auto;
-    top: 0;
-    bottom: 72px;
-    border-top: 0;
-    border-left: 3px dashed var(--cocoa-700);
-  }
-
-  .ritualCard {
-    margin-top: 0;
-  }
+/* Notes stack, with the number beside the words. */
+@media (max-width: 1180px) {
+  .ritualRow { grid-template-columns: minmax(0, 1fr); max-width: 520px; margin: 0 auto; }
+  .ritualRow::before { display: none; }
+  .ritualCard { flex-direction: row; gap: 16px; }
 }
 
 @media (max-width: 1100px) {
@@ -354,24 +468,7 @@
   .story { display: contents; }
   .showcase { order: -2; }
 
-  .ritualRow {
-    grid-template-columns: 1fr;
-    gap: 72px;
-    max-width: 440px;
-    margin: 0 auto;
-    padding-top: 24px;
-  }
-
-  .ritualRow::before {
-    left: 50%;
-    right: auto;
-    top: 0;
-    bottom: 72px;
-    border-top: 0;
-    border-left: 3px dashed var(--cocoa-700);
-  }
-
-  .ritualCard { margin-top: 0; }
+  .slipList { grid-template-columns: minmax(0, 1fr); }
 }
 
 /* Phones: an app-style page. The intro runs up under the see-through header. */
@@ -476,22 +573,42 @@
   }
 
   .ritualRow::before {
+    display: block;
+    left: 50%;
+    right: auto;
     top: 20px;
     bottom: 40px;
+    border-top: 0;
+    border-left: 3px dashed var(--cocoa-700);
     opacity: .5;
   }
 
-  .ritualCard {
+  /* Snapshots, not notes: a photo on white card, no lines or tape. */
+  .ritualCard,
+  .ritualCard:nth-child(n) {
+    display: block;
     width: 80%;
     padding: 12px 12px 18px;
+    background: var(--cream-0);
+    border-radius: 10px;
+    box-shadow: var(--shadow-lg);
   }
 
+  .ritualCard::before,
+  .ritualCard::after { display: none; }
+
   .ritualCard:nth-child(even) { margin-left: auto; }
+  .ritualCard:nth-child(3n + 1) { --tilt: -3deg; }
+  .ritualCard:nth-child(3n + 2) { --tilt: 2.4deg; }
+  .ritualCard:nth-child(3n) { --tilt: -1.6deg; }
 
   .ritualNumber {
+    position: absolute;
+    z-index: 2;
     top: -48px;
     left: -10px;
-    font-size: 92px;
+    margin: 0;
+    font: 800 92px/1 var(--font-display);
   }
 
   .ritualCard:nth-child(even) .ritualNumber {
@@ -499,7 +616,8 @@
     right: -6px;
   }
 
-  .ritualTitle { padding-top: 14px; }
+  .ritualPhoto { display: block; }
+  .ritualText { gap: 6px; padding: 14px 4px 0; }
 
   /* What's inside and other boxes: swipe rows that bleed to the screen edge. */
   .contentsHead {
@@ -508,6 +626,8 @@
     gap: 10px;
     margin-bottom: 12px;
   }
+
+  .slip { display: none; }
 
   .contents,
   .others {

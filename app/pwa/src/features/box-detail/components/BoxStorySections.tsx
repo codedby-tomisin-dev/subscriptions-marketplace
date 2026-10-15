@@ -5,9 +5,8 @@ import { BoxTile, isCadence, type Box, type PurchaseOption } from "@/features/ca
 import { InfoAccordion } from "./InfoAccordion";
 import styles from "./BoxDetail.module.css";
 
-/** Each ritual card leans and drops a little differently, like snapshots laid on a table. */
-const RITUAL_TILTS = ["-3deg", "2.2deg", "-1.4deg"];
-const RITUAL_DROPS = ["0px", "72px", "20px"];
+/** Each ritual note leans a little differently, like notes taped up in a row. Phones show them as tilted snapshots. */
+const RITUAL_TILTS = ["-1.2deg", "0.8deg", "-0.6deg"];
 const NUMBER_WORDS = ["", "One small moment", "Two small moments", "Three small moments", "Four small moments", "Five small moments"];
 
 export function RitualSection({ box }: { box: Box }) {
@@ -21,14 +20,18 @@ export function RitualSection({ box }: { box: Box }) {
           <li
             key={step.title}
             className={styles.ritualCard}
-            style={{ "--tilt": RITUAL_TILTS[index % 3], "--drop": RITUAL_DROPS[index % 3] } as CSSProperties}
+            style={{ "--tilt": RITUAL_TILTS[index % 3], "--tape": `var(--${box.tone}-300, var(--blush-300))` } as CSSProperties}
           >
             <span className={styles.ritualNumber} style={{ WebkitTextStrokeColor: `var(--${box.tone}-500, var(--blush-500))` }} aria-hidden>
               {index + 1}
             </span>
-            <ProductImage tone={box.tone} ratio="4 / 3" radius="6px" label={step.title} />
-            <h3 className={styles.ritualTitle}>{step.title}</h3>
-            <p className={styles.ritualBody}>{step.body}</p>
+            <div className={styles.ritualPhoto}>
+              <ProductImage tone={box.tone} ratio="4 / 3" radius="6px" label={step.title} />
+            </div>
+            <div className={styles.ritualText}>
+              <h3 className={styles.ritualTitle}>{step.title}</h3>
+              <p className={styles.ritualBody}>{step.body}</p>
+            </div>
           </li>
         ))}
       </ol>
@@ -48,6 +51,31 @@ export function ContentsSection({ box }: { box: Box }) {
         <p className={styles.contentsNote}>
           Contents change every delivery, so you’ll never get the same thing twice. Always this good, though.
         </p>
+      </div>
+      {/* Wide screens: a packing slip. Phones: a swipe row of picture cards (hidden here by CSS, and vice versa). */}
+      <div className={styles.slip}>
+        <div className={styles.slipHead}>
+          <span>Packing slip · {box.name} box</span>
+          <span>
+            {box.contents.length} items · packed by hand
+          </span>
+        </div>
+        <ol className={styles.slipList}>
+          {box.contents.map((item, index) => (
+            <li key={item.name}>
+              <span
+                className={styles.slipNumber}
+                style={{ background: `var(--${item.tone}-100, var(--surface-sunken))`, color: `var(--${item.tone}-700, var(--cocoa-700))` }}
+                aria-hidden
+              >
+                {String(index + 1).padStart(2, "0")}
+              </span>
+              <span className={styles.slipName}>{item.name}</span>
+              <span className={styles.slipLeader} aria-hidden />
+              <span className={styles.slipDescription}>{item.description}</span>
+            </li>
+          ))}
+        </ol>
       </div>
       <ul className={styles.contents}>
         {box.contents.map((item) => (
