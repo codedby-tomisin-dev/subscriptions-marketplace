@@ -29,8 +29,25 @@ export interface ListingSource {
 /** Research plus writing takes up to a minute or two; the function allows three. */
 const GENERATE_TIMEOUT_MS = 180_000;
 
-export const generateListing = (idea: string) =>
-  callFunction<{ idea: string }, { listing: GeneratedListing; sources: ListingSource[] }>("admin_generate_box_listing", { idea }, GENERATE_TIMEOUT_MS);
+/** An experience a box could be built around, e.g. "A breakfast from a different country, every month". */
+export interface ExperienceAngle {
+  title: string;
+  /** What turns up and what they get to do with it. */
+  promise: string;
+  /** Why someone would pay for it again and again. */
+  why: string;
+}
+
+export const suggestAngles = (idea: string) =>
+  callFunction<{ idea: string }, { angles: ExperienceAngle[] }>("admin_suggest_box_angles", { idea }, GENERATE_TIMEOUT_MS);
+
+/** `angle` is the experience to build the box around. */
+export const generateListing = (idea: string, angle?: string) =>
+  callFunction<{ idea: string; angle?: string }, { listing: GeneratedListing; sources: ListingSource[] }>(
+    "admin_generate_box_listing",
+    { idea, angle },
+    GENERATE_TIMEOUT_MS,
+  );
 
 export interface IllustrationRequest {
   name: string;

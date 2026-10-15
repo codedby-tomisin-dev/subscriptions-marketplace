@@ -1,6 +1,7 @@
 import { boxOptions, PURCHASE_COPY, PURCHASE_OPTIONS, type Box, type BoxFact, type BoxItem, type BoxStatus, type PurchaseOption, type RitualStep } from "@/features/catalog";
 import type { SurfaceTone } from "@/shared/types";
 import type { BoxPayload, GeneratedListing } from "./api";
+import { DELIVERY_PENCE, PACKAGING_PENCE, suggestedPricePence } from "./pricing";
 
 /** A packing item in the form; its cost is pounds text like the prices, blank if unknown. */
 export interface DraftItem {
@@ -43,7 +44,7 @@ export const TONES: { value: SurfaceTone; label: string }[] = [
   { value: "cream", label: "Cream" },
 ];
 
-const toPounds = (pence: number) => (pence % 100 === 0 ? String(pence / 100) : (pence / 100).toFixed(2));
+export const toPounds = (pence: number) => (pence % 100 === 0 ? String(pence / 100) : (pence / 100).toFixed(2));
 
 export function emptyDraft(sortOrder: number): BoxDraft {
   return {
@@ -116,6 +117,11 @@ export interface PlanEconomics {
   cost: number;
   /** Items in this plan with no cost yet, so the sum is short. */
   uncosted: number;
+  /** Delivery and packaging, per box. */
+  shipping: number;
+  /** What the pricing rule says to charge: goods + 30%, delivery and packaging. */
+  suggested: number;
+  /** After goods, delivery and packaging. */
   profit: number | null;
   /** Profit as a share of the price, 0–1. */
   margin: number | null;
@@ -128,8 +134,17 @@ export function planEconomics(draft: Pick<BoxDraft, "prices" | "items">): Record
     const costs = items.map((item) => parsePounds(item.cost));
     const cost = costs.reduce<number>((sum, pence) => sum + (pence ?? 0), 0);
     const price = parsePounds(draft.prices[option]);
-    const profit = price === null ? null : price - cost;
-    return { price, cost, uncosted: costs.filter((pence) => pence === null).length, profit, margin: price && profit !== null ? profit / price : null };
+    const shipping = DELIVERY_PENCE + PACKAGING_PENCE;
+    const profit = price === null ? null : price - cost - shipping;
+    return {
+      price,
+      cost,
+      uncosted: costs.filter((pence) => pence === null).length,
+      shipping,
+      suggested: suggestedPricePence(cost),
+      profit,
+      margin: price && profit !== null ? profit / price : null,
+    };
   });
 }
 

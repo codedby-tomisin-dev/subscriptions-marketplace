@@ -1,5 +1,13 @@
 """Drafts a whole box listing from a one-line idea ("pet care"), for the admin to review.
 
+It works from the experience, not the category: "breakfast" is a category; "a
+breakfast from a different country every month" is worth paying for. So first
+`angles()` suggests a few distinct experiences for the idea, the admin picks one
+(or writes their own), and `draft()` writes the listing around it.
+
+Every packing item gets used up within the delivery cycle (eaten, read, used,
+worn out), so a subscription never piles up permanent things like a mug a month.
+
 A PydanticAI agent on OpenAI returns a `GeneratedListing`. When a Parallel.ai key
 is set it can first research the idea on the web, a few searches at most. Nothing
 here saves anything: the draft fills the New box form, and the admin creates
@@ -22,13 +30,16 @@ from pydantic_ai import Agent, ModelRetry, RunContext
 
 from core import telemetry
 from modules.catalog.catalog import Box, Tone, starter_boxes
+from modules.catalog.pricing import suggested_price_pence
 from modules.shared.document import Document
 from modules.shared.errors import FailedPrecondition
 from third_party.parallel.client import ParallelSearchClient, SearchResult, digest
 
 MAX_IDEA_LENGTH = 200
+MAX_ANGLE_LENGTH = 400
+ANGLE_COUNT = 4
 MAX_SEARCHES = 4
-# Prices the agent may suggest, in pence. The starter boxes run £12–£19 a week.
+# The range a drafted box's price may land in, in pence. Prices come from the item costs (see `pricing`).
 MIN_PRICE_PENCE = 500
 MAX_PRICE_PENCE = 15_000
 
@@ -59,17 +70,20 @@ class ListingContentsItem(Document):
     tone: Tone = Field(description="Pastel for the placeholder tile; pick one that suits the item.")
 
 
+# How long a packing item lasts once it arrives. Nothing outlasts a month: a subscription
+# repeats, so anything permanent would pile up (a flashlight every month is silly).
+ItemLifespan = Literal["one use", "about a week", "about a month"]
+
+
 class ListingItem(Document):
     name: str = Field(description="A concrete thing to stock and pack, e.g. 'Shiraz 75cl'.")
+    lifespan: ItemLifespan = Field(
+        description="How soon it's eaten, drunk, read, used up or worn out. Only consumables and things with a short life."
+    )
     in_weekly_box: bool = Field(description="Weekly boxes are smaller and only hold some items; monthly boxes hold all of them.")
     cost_pence: int = Field(
         description="What one costs to buy, in pence: the average shelf price across Tesco, Sainsbury's, Asda and Morrisons, e.g. 350 for £3.50."
     )
-
-
-class ListingPrices(Document):
-    week: int = Field(description="Weekly price in pence, e.g. 1500 for £15.")
-    month: int = Field(description="Monthly price in pence; more than weekly, as the monthly box is fuller.")
 
 
 class ListingPlanNotes(Document):
@@ -80,7 +94,10 @@ class ListingPlanNotes(Document):
 class GeneratedListing(Document):
     """Everything the New box form needs except the photo. Field names match the form."""
 
-    name: str = Field(description="1–3 words, sentence case, e.g. 'Snack drawer'.")
+    name: str = Field(
+        description="1–3 words, sentence case, naming the experience rather than the category, "
+        "e.g. 'Breakfast passport' rather than 'Breakfast'."
+    )
     audience: str = Field(description="Up to 6 words starting 'For': a person or a moment, e.g. 'For the 4pm slump'.")
     tone: Tone
     pitch: str = Field(
@@ -91,12 +108,26 @@ class GeneratedListing(Document):
         "and that we do the work, e.g. 'We pack the calm — you just have to open it.'"
     )
     shot_description: str = Field(description="Up to 10 words of art direction for the hero photo: the key items, comma-separated.")
-    prices: ListingPrices
     plan_notes: ListingPlanNotes
     facts: list[ListingFact] = Field(description="3 or 4 highlights.")
     ritual: list[ListingStep] = Field(description="Exactly 3 steps for enjoying the box, in order.")
     contents: list[ListingContentsItem] = Field(description="4 to 6 things a full box typically holds.")
     items: list[ListingItem] = Field(description="4 to 8 packing items matching the contents.")
+
+
+class ExperienceAngle(Document):
+    title: str = Field(
+        description="Up to 10 words: the experience itself, specific and repeatable, "
+        "e.g. 'A breakfast from a different country, every month'."
+    )
+    promise: str = Field(
+        description="Up to 25 words: what turns up and what they get to do with it, and what's new each delivery."
+    )
+    why: str = Field(description="Up to 15 words: why someone would happily pay for it again and again.")
+
+
+class AngleSet(Document):
+    angles: list[ExperienceAngle] = Field(description=f"Exactly {ANGLE_COUNT} clearly different experiences.")
 
 
 @dataclass
@@ -115,6 +146,11 @@ The voice: simple, sweet and short. Match the five listings you're given; they a
 house style. British English, plain words, "you". No exclamation marks, no hype
 ("ultimate", "curated", "elevate", "indulge"). Every word earns its place.
 
+Sell an experience, not a category. A breakfast box is a category; "a breakfast from
+a different country every month" is an experience worth paying for. Every listing is
+built around one specific experience: the name, pitch, story, ritual and contents all
+deliver it, and each delivery brings something new within it.
+
 Make the box obviously worth it, using Hormozi's value equation:
 value = (dream outcome × likelihood it happens) / (time it takes × effort it asks).
 - Dream outcome up: the pitch names the result the customer wants, as if it's done
@@ -129,8 +165,15 @@ Rules:
 - Everything must be things we could really buy and pack in the UK. No brand names.
 - Specific, never invented: no made-up ratings, reviews, certifications or claims like
   "vet-approved" or "award-winning". Never put what the contents cost in the copy.
-- Cost each packing item at its average UK supermarket shelf price (costPence). Each plan
-  must leave a healthy profit: its items should cost well under half its price.
+- Cost each packing item at its average UK supermarket shelf price (costPence): what a
+  shopper would pay for it. Each plan's price is worked out from those costs (the goods,
+  plus 30% for the experience, plus delivery and packaging), so cost them accurately and
+  fill each box generously enough to feel worth its price.
+- Everything in the box gets used up within its delivery cycle: eaten, drunk, read,
+  used up or worn out. A subscription repeats, so nothing permanent that would pile up:
+  no tools, gadgets, mugs, dishes, games or ornaments. A book box sends a new book each
+  time (read once); a plant box sends seeds, plant food and cuttings, not a torch or a
+  trowel. This applies to the contents customers see and to the packing items.
 - Weekly boxes are a smaller version of the monthly box; price them like the examples.
 - Make the box clearly different from the boxes already on sale.
 """
@@ -143,6 +186,22 @@ Ask plain-language questions. Then write the listing from what you learned.
 """
 
 
+ANGLE_INSTRUCTIONS = """\
+You come up with box ideas for Bonbon, a UK subscription-box shop: small physical boxes,
+packed by hand, sent weekly or monthly.
+
+Given a rough idea, suggest {count} clearly different experiences a box could deliver.
+Sell the experience, not the category: "breakfast box" is a category; "a breakfast from
+a different country every month" is an experience. Each one should:
+- be specific and repeatable, with something new in every delivery (a country, a
+  season, a chapter, a challenge, a theme), so it's worth having again and again;
+- be built from things that get used up within a month (eaten, read, used up), never
+  permanent things that would pile up;
+- be clearly different from the others and from the boxes already on sale.
+British English, plain words, no hype, no exclamation marks.
+"""
+
+
 class ListingAgent:
     """`model` is a PydanticAI model (OpenAI in production, a TestModel in tests)."""
 
@@ -151,25 +210,45 @@ class ListingAgent:
         self._search = search if search and search.available else None
         self._max_searches = max_searches
 
-    def draft(self, idea: str, catalog: list[Box]) -> dict:
-        """{idea} → {listing: the New box form's fields, sources: [{title, url}]}."""
-        idea = " ".join(idea.split())
-        if not idea:
-            raise ValueError("Describe the idea for the box, e.g. “pet care”.")
-        if len(idea) > MAX_IDEA_LENGTH:
-            raise ValueError(f"Keep the idea under {MAX_IDEA_LENGTH} characters.")
+    def angles(self, idea: str, catalog: list[Box]) -> dict:
+        """{idea} → {angles: [{title, promise, why}]}: experiences to build the box around. No research, so it's quick."""
+        idea = _clean_idea(idea)
+        agent = Agent(
+            self._model,
+            output_type=AngleSet,
+            instructions=ANGLE_INSTRUCTIONS.format(count=ANGLE_COUNT),
+            name="angle_agent",
+            output_retries=3,
+        )
+        agent.output_validator(_check_angles)
+        try:
+            result = agent.run_sync(_angle_prompt(idea, catalog))
+        except Exception as error:  # the model or its API: nothing the admin can fix but a retry
+            telemetry.event("angles_failed", level=logging.WARNING, idea=idea, error=repr(error))
+            raise ListingFailed() from error
+        telemetry.event("angles_suggested", idea=idea, count=len(result.output.angles))
+        return {"angles": [angle.model_dump(by_alias=True) for angle in result.output.angles]}
+
+    def draft(self, idea: str, catalog: list[Box], angle: str | None = None) -> dict:
+        """{idea, angle?} → {listing: the New box form's fields, sources: [{title, url}]}.
+        `angle` is the experience to build it around, picked from `angles()` or written by the admin."""
+        idea = _clean_idea(idea)
+        angle = " ".join((angle or "").split()) or None
+        if angle and len(angle) > MAX_ANGLE_LENGTH:
+            raise ValueError(f"Keep the experience under {MAX_ANGLE_LENGTH} characters.")
 
         research = ResearchLog()
         try:
-            result = self._agent().run_sync(_prompt(idea, catalog), deps=research)
+            result = self._agent().run_sync(_prompt(idea, catalog, angle), deps=research)
         except Exception as error:  # the model or its API: nothing the admin can fix but a retry
             telemetry.event("listing_draft_failed", level=logging.WARNING, idea=idea, error=repr(error))
             raise ListingFailed() from error
         listing: GeneratedListing = result.output
-        telemetry.event("listing_drafted", idea=idea, name=listing.name, searches=research.searches)
+        telemetry.event("listing_drafted", idea=idea, angle=angle, name=listing.name, searches=research.searches)
         return {
             "listing": {
                 **listing.model_dump(by_alias=True),
+                "prices": _prices(listing),
                 "image": None,
                 "testimonial": None,
                 "status": "active",
@@ -206,6 +285,44 @@ class ListingAgent:
         return agent
 
 
+def _clean_idea(idea: str) -> str:
+    idea = " ".join(idea.split())
+    if not idea:
+        raise ValueError("Describe the idea for the box, e.g. “pet care”.")
+    if len(idea) > MAX_IDEA_LENGTH:
+        raise ValueError(f"Keep the idea under {MAX_IDEA_LENGTH} characters.")
+    return idea
+
+
+ANGLE_WORD_LIMITS = {"title": 10, "promise": 25, "why": 15}
+
+
+def _check_angles(result: AngleSet) -> AngleSet:
+    problems = []
+    if len(result.angles) != ANGLE_COUNT:
+        problems.append(f"give exactly {ANGLE_COUNT} angles")
+    titles = [angle.title.strip().lower() for angle in result.angles]
+    if len(set(titles)) != len(titles):
+        problems.append("make every angle different")
+    for i, angle in enumerate(result.angles):
+        for field_name, limit in ANGLE_WORD_LIMITS.items():
+            text = getattr(angle, field_name)
+            if len(text.split()) > limit:
+                problems.append(f"shorten angles[{i}].{field_name} to {limit} words or fewer (now: “{text}”)")
+    if problems:
+        raise ModelRetry("Please fix the angles: " + "; ".join(problems) + ".")
+    return result
+
+
+def _goods_pence(listing: GeneratedListing, cadence: str) -> int:
+    return sum(item.cost_pence for item in listing.items if cadence == "month" or item.in_weekly_box)
+
+
+def _prices(listing: GeneratedListing) -> dict[str, int]:
+    """Each plan's price, from what its goods cost (see `pricing`)."""
+    return {cadence: suggested_price_pence(_goods_pence(listing, cadence)) for cadence in ("week", "month")}
+
+
 def _check_listing(listing: GeneratedListing) -> GeneratedListing:
     """Counts, prices and lengths the schema can't express. A failure sends the model back to fix it."""
     problems = []
@@ -220,15 +337,15 @@ def _check_listing(listing: GeneratedListing) -> GeneratedListing:
     elif not any(item.in_weekly_box for item in listing.items) or all(item.in_weekly_box for item in listing.items):
         problems.append("put some, but not all, packing items in the weekly box")
     problems.extend(_too_long(listing))
-    week, month = listing.prices.week, listing.prices.month
-    if not (MIN_PRICE_PENCE <= week < month <= MAX_PRICE_PENCE):
-        problems.append(f"prices must be in pence, between {MIN_PRICE_PENCE} and {MAX_PRICE_PENCE}, with weekly below monthly")
     if any(item.cost_pence <= 0 for item in listing.items):
         problems.append("give every packing item its average supermarket price in pence")
-    for cadence, price in (("week", week), ("month", month)):
-        cost = sum(item.cost_pence for item in listing.items if cadence == "month" or item.in_weekly_box)
-        if cost >= price:
-            problems.append(f"the {cadence}ly box's items cost {cost}p, more than its {price}p price: cut items or raise the price")
+    else:
+        for cadence, price in _prices(listing).items():
+            if not MIN_PRICE_PENCE <= price <= MAX_PRICE_PENCE:
+                problems.append(
+                    f"the {cadence}ly box would cost the customer {price}p; keep it between {MIN_PRICE_PENCE}p and "
+                    f"{MAX_PRICE_PENCE}p by changing what goes in it"
+                )
     if problems:
         raise ModelRetry("Please fix the listing: " + "; ".join(problems) + ".")
     return listing
@@ -264,27 +381,39 @@ def _too_long(listing: GeneratedListing) -> list[str]:
     ]
 
 
-def _prompt(idea: str, catalog: list[Box]) -> str:
+def _on_sale(catalog: list[Box]) -> list[str]:
+    return [f"- {box.name}: {box.audience}. “{box.pitch}”" for box in catalog if box.status == "active"] or ["- none yet"]
+
+
+def _angle_prompt(idea: str, catalog: list[Box]) -> str:
+    return "\n".join([f"The idea: {idea}", "", "Boxes already on sale:", *_on_sale(catalog)])
+
+
+def _prompt(idea: str, catalog: list[Box], angle: str | None = None) -> str:
     # Always the design's five boxes: the live catalog can drift from the house style.
     examples = [_example(box) for box in starter_boxes()]
-    others = [f"- {box.name}: {box.audience}. “{box.pitch}”" for box in catalog if box.status == "active"]
+    experience = (
+        [f"The experience to build it around: {angle}", "Every part of the listing should deliver this experience.", ""]
+        if angle
+        else ["Pick the most compelling specific experience for this idea, and build the listing around it.", ""]
+    )
     return "\n".join(
         [
             f"Write the listing for a new box. The idea: {idea}",
-            "",
+            *experience,
             "Boxes already on sale (don't repeat them):",
-            *(others or ["- none yet"]),
+            *_on_sale(catalog),
             "",
-            "The house style: match these listings' tone, structure and length.",
+            "The house style: match these listings' tone, structure and length. They're for the voice only:",
+            "they predate the rule that everything is used up, so don't copy their contents.",
             json.dumps(examples, ensure_ascii=False, indent=1),
         ]
     )
 
 
 def _example(box: Box) -> dict:
-    data = box.model_dump(by_alias=True, include={"name", "audience", "tone", "pitch", "story", "shot_description", "prices", "plan_notes", "facts", "ritual", "contents"})
-    data["items"] = [{"name": item.name, "inWeeklyBox": item.in_weekly_box} for item in box.items]
-    return data
+    # No packing items: some of the launch boxes' are permanent (a card game, socks), which drafts mustn't copy.
+    return box.model_dump(by_alias=True, include={"name", "audience", "tone", "pitch", "story", "shot_description", "plan_notes", "facts", "ritual", "contents"})
 
 
 def _unique_sources(results: list[SearchResult]) -> list[dict]:

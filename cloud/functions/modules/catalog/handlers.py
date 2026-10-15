@@ -52,11 +52,21 @@ AI_CALL = {"timeout_sec": 180, "memory": options.MemoryOption.GB_1}
 
 @https_fn.on_call(**AI_CALL)
 @traced_call(require_admin=True)
-def admin_generate_box_listing(req: https_fn.CallableRequest) -> dict:
-    """{idea} → {listing, sources}: a draft for the New box form. Saves nothing."""
+def admin_suggest_box_angles(req: https_fn.CallableRequest) -> dict:
+    """{idea} → {angles: [{title, promise, why}]}: experiences a box for this idea could deliver."""
     idea = str((req.data or {}).get("idea") or "")
     catalog = CatalogRepository(get_db()).load().all()
-    return build_listing_agent().draft(idea, catalog)
+    return build_listing_agent().angles(idea, catalog)
+
+
+@https_fn.on_call(**AI_CALL)
+@traced_call(require_admin=True)
+def admin_generate_box_listing(req: https_fn.CallableRequest) -> dict:
+    """{idea, angle?} → {listing, sources}: a draft for the New box form, built around the
+    experience in `angle` when given. Saves nothing."""
+    data = req.data or {}
+    catalog = CatalogRepository(get_db()).load().all()
+    return build_listing_agent().draft(str(data.get("idea") or ""), catalog, angle=str(data.get("angle") or "") or None)
 
 
 def build_illustration_service() -> IllustrationService:

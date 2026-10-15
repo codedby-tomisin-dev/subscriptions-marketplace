@@ -4,7 +4,8 @@ import { Button, Checkbox, IconButton, Input } from "@/components/ui";
 import { PURCHASE_COPY, PURCHASE_OPTIONS, type PurchaseOption } from "@/features/catalog";
 import { formatPrice } from "@/shared/utils";
 import { AdminPanel } from "../shared";
-import { draftOptions, planEconomics, type BoxDraft, type DraftItem } from "./boxDraft";
+import { draftOptions, planEconomics, toPounds, type BoxDraft, type DraftItem } from "./boxDraft";
+import { DELIVERY_PENCE, PACKAGING_PENCE, SERVICE_MARKUP_PERCENT } from "./pricing";
 import styles from "./BoxEditor.module.css";
 
 const PLACEHOLDERS: Record<PurchaseOption, string> = { week: "A short read · 2 treats", month: "The full nook · 5 treats", once: "The full nook, just once" };
@@ -112,6 +113,39 @@ export function PlansPanel({ draft, update }: PlansPanelProps) {
             </div>
             <div className={styles.planSummary} role="row">
               <span role="rowheader" className={styles.planLabel}>
+                Delivery & packaging
+              </span>
+              {options.map((option) => (
+                <span key={option} className={styles.planCol}>
+                  <span className={styles.planFigure}>{formatPrice(economics[option].shipping)}</span>
+                </span>
+              ))}
+            </div>
+            <div className={styles.planSummary} role="row">
+              <span role="rowheader" className={styles.planLabel}>
+                Suggested price
+              </span>
+              {options.map((option) => {
+                const { suggested, price } = economics[option];
+                return (
+                  <span key={option} className={styles.planCol}>
+                    <span className={styles.planFigure}>{formatPrice(suggested)}</span>
+                    {price !== suggested && (
+                      <button
+                        type="button"
+                        className={styles.planUse}
+                        onClick={() => update({ prices: { ...draft.prices, [option]: toPounds(suggested) } })}
+                        aria-label={`Use ${formatPrice(suggested)} as the ${PURCHASE_COPY[option].label.toLowerCase()} price`}
+                      >
+                        Use it
+                      </button>
+                    )}
+                  </span>
+                );
+              })}
+            </div>
+            <div className={styles.planSummary} role="row">
+              <span role="rowheader" className={styles.planLabel}>
                 Price
               </span>
               {options.map((option) => (
@@ -142,7 +176,12 @@ export function PlansPanel({ draft, update }: PlansPanelProps) {
           </>
         )}
       </div>
-      {options.length > 0 && <p className={styles.planFootnote}>Before postage, packaging and card fees.</p>}
+      {options.length > 0 && (
+        <p className={styles.planFootnote}>
+          Suggested price: the goods, plus {SERVICE_MARKUP_PERCENT}% for the experience, plus {formatPrice(DELIVERY_PENCE)} delivery and{" "}
+          {formatPrice(PACKAGING_PENCE)} packaging, rounded up to the next 50p. Profit is before card fees.
+        </p>
+      )}
 
       <div className={styles.planNotes}>
         {options.map((option) => (
