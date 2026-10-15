@@ -1,4 +1,4 @@
-import { fetchActiveBoxes } from "@/features/catalog";
+import { fetchActiveBoxes } from "@/features/catalog/api";
 import { PREVIEW_SIZE, sitePreview } from "@/features/share";
 
 export const revalidate = 3600;

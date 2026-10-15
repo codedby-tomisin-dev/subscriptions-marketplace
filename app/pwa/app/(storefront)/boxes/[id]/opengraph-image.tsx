@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { fetchBox } from "@/features/catalog";
+import { fetchBox } from "@/features/catalog/api";
 import { boxPreview, PREVIEW_SIZE } from "@/features/share";
 
 // Catalog edits (a new illustration, a price) reach previews within a minute, like the page.

@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/constants";
-import { fetchActiveBoxes } from "@/features/catalog";
+import { fetchActiveBoxes } from "@/features/catalog/api";
 
 export const revalidate = 3600;
 
