@@ -5,6 +5,11 @@ const nextConfig: NextConfig = {
   // A second dev server (e.g. one pointed at other emulator ports) needs its own
   // build folder, or the two share compiled code, env values included.
   distDir: process.env.NEXT_DIST_DIR || ".next",
+  // Link-preview images read their fonts and the launch boxes' SVG illustrations from disk.
+  // They're small, so every route gets them rather than guessing each image route's key.
+  outputFileTracingIncludes: {
+    "/**": ["./src/features/share/fonts/**", "./public/illustrations/**"],
+  },
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "firebasestorage.googleapis.com" },

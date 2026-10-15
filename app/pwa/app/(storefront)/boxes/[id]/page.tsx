@@ -1,6 +1,7 @@
 import { cache } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { APP_NAME } from "@/constants";
 import { BoxDetailContainer } from "@/features/box-detail";
 import { fetchActiveBoxes, fetchBox } from "@/features/catalog";
 
@@ -19,7 +20,17 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: BoxPageProps): Promise<Metadata> {
   const box = await loadBox((await params).id);
-  return box ? { title: `${box.name} box`, description: box.story } : {};
+  if (!box) return {};
+  const title = `${box.name} box — ${box.pitch}`;
+  const url = `/boxes/${box.id}`;
+  // The preview image is this route's opengraph-image.tsx: the box's illustration on its colour.
+  return {
+    title: `${box.name} box`,
+    description: box.story,
+    alternates: { canonical: url },
+    openGraph: { type: "website", url, title, description: box.story, siteName: APP_NAME, locale: "en_GB" },
+    twitter: { card: "summary_large_image", title, description: box.story },
+  };
 }
 
 export default async function BoxPage({ params }: BoxPageProps) {
