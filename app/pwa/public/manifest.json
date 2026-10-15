@@ -1,7 +1,7 @@
 {
   "name": "Bonbon",
   "short_name": "Bonbon",
-  "description": "Little joys, delivered on repeat.",
+  "description": "Little boxes of joy, delivered on repeat.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#FFFFFF",

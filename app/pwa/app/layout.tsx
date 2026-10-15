@@ -11,7 +11,7 @@ const dmMono = DM_Mono({ subsets: ["latin"], weight: ["400", "500"], variable: "
 export const metadata: Metadata = {
   title: {
     template: `%s · ${APP_NAME}`,
-    default: `${APP_NAME} — Little joys, delivered on repeat`,
+    default: `${APP_NAME} — Little boxes of joy, delivered on repeat`,
   },
   description: "Subscription boxes for romance, self-care, beauty, snacks and home — arriving as often as you’d like.",
 };

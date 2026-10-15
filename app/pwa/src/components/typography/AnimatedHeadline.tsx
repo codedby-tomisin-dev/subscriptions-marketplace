@@ -4,8 +4,9 @@ import styles from "./AnimatedHeadline.module.css";
 const UNDERLINE_PATH = "M6 26 C 60 14, 140 12, 210 16 S 286 22, 294 18";
 
 /**
- * Reveals the headline word by word. With four or more words, the last two
- * drop to their own line and get a hand-drawn underline.
+ * Reveals the headline word by word. With four or more words, the last two get a
+ * hand-drawn underline. The line breaks after the first comma before them
+ * ("Little boxes of joy, / delivered on repeat."), or, with no comma, just before them.
  */
 export function AnimatedHeadline({ text }: { text: string }) {
   const words = text.split(" ");
@@ -25,10 +26,13 @@ export function AnimatedHeadline({ text }: { text: string }) {
   if (words.length < 4) return <>{renderRun(words)}</>;
 
   const lead = words.slice(0, -2);
+  const comma = lead.findIndex((word) => word.endsWith(","));
+  const [beforeBreak, afterBreak] = comma < 0 ? [lead, []] : [lead.slice(0, comma + 1), lead.slice(comma + 1)];
   return (
     <>
-      {renderRun(lead)}
+      {renderRun(beforeBreak)}
       <br />
+      {afterBreak.length > 0 && <>{renderRun(afterBreak, beforeBreak.length)} </>}
       <span className={styles.mark}>
         {renderRun(words.slice(-2), lead.length)}
         <svg viewBox="0 0 300 40" preserveAspectRatio="none" aria-hidden="true">

@@ -10,7 +10,7 @@ import { scrollToElement } from "@/shared/utils";
 import { AnimatedHeadline } from "@/components/typography";
 import styles from "./Home.module.css";
 
-const HEADLINE = "Little joys, delivered on repeat.";
+const HEADLINE = "Little boxes of joy, delivered on repeat.";
 /** Playful vertical stagger for the five tiles on wide screens. */
 const TILE_OFFSETS = [8, 0, 14, 2, 10];
 const REASSURANCES = [
