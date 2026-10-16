@@ -60,6 +60,8 @@ export interface Box {
   illustration: string | null;
   /** Photo URL, uploaded by hand; leads the box page's gallery. Falls back to a tinted placeholder. */
   image: string | null;
+  /** A short, silent clip uploaded by hand; when set, it's the box page's one picture. */
+  video: string | null;
   /** "For the two of you" */
   audience: string;
   /** Art-direction note shown on the placeholder until photography exists. */

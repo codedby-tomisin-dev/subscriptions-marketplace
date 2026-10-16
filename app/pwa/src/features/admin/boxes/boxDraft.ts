@@ -18,6 +18,7 @@ export interface BoxDraft {
   tone: SurfaceTone;
   illustration: string | null;
   image: string | null;
+  video: string | null;
   audience: string;
   shotDescription: string;
   /** Which ways the box is on sale. A price or note for an option that's off is kept in the form but not saved. */
@@ -52,6 +53,7 @@ export function emptyDraft(sortOrder: number): BoxDraft {
     tone: "blush",
     illustration: null,
     image: null,
+    video: null,
     audience: "",
     shotDescription: "",
     onSale: { week: true, month: true, once: false },
@@ -78,6 +80,7 @@ export function draftFromBox(box: Box): BoxDraft {
   const options = boxOptions(box);
   return {
     ...box,
+    video: box.video ?? null, // boxes saved before videos existed have no field
     onSale: byOption((option) => options.includes(option)),
     prices: byOption((option) => poundsOrBlank(box.prices[option])),
     planNotes: byOption((option) => box.planNotes[option] ?? ""),
@@ -93,6 +96,7 @@ export function draftFromListing(listing: GeneratedListing, current: BoxDraft): 
     ...listing,
     illustration: current.illustration,
     image: current.image,
+    video: current.video,
     // The agent drafts weekly and monthly plans; the one-off stays as the form had it.
     onSale: { week: true, month: true, once: current.onSale.once },
     prices: { ...current.prices, week: poundsOrBlank(listing.prices.week), month: poundsOrBlank(listing.prices.month) },

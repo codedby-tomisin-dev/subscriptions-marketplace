@@ -3,7 +3,7 @@ import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui";
 import { useCatalog } from "@/features/catalog";
 import { describeError } from "@/shared/api";
-import { generateIllustration, saveBox, setBoxStatus, uploadBoxPhoto, type GeneratedListing, type ListingSource } from "./api";
+import { generateIllustration, saveBox, setBoxStatus, uploadBoxPhoto, uploadBoxVideo, type GeneratedListing, type ListingSource } from "./api";
 import { draftFromBox, draftFromListing, emptyDraft, payloadFromDraft, type BoxDraft } from "./boxDraft";
 
 /** Form state and actions for creating (`boxId` null) or editing a box. */
@@ -16,6 +16,7 @@ export function useBoxEditor(boxId: string | null) {
   const [draft, setDraft] = useState<BoxDraft | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isUploadingVideo, setIsUploadingVideo] = useState(false);
   // Where the last drafted listing's research came from, shown beside the form.
   const [sources, setSources] = useState<ListingSource[]>([]);
   const [isDrawing, setIsDrawing] = useState(false);
@@ -82,6 +83,20 @@ export function useBoxEditor(boxId: string | null) {
     [update, showToast],
   );
 
+  const uploadVideo = useCallback(
+    async (file: File) => {
+      setIsUploadingVideo(true);
+      try {
+        update({ video: await uploadBoxVideo(file) });
+      } catch (error) {
+        showToast({ tone: "danger", title: "Couldn’t upload that video", message: error instanceof Error ? error.message : describeError(error) });
+      } finally {
+        setIsUploadingVideo(false);
+      }
+    },
+    [update, showToast],
+  );
+
   /** Draws an illustration for `basis` (the form as it is, or a listing just drafted) and puts it in the form. */
   const drawIllustration = useCallback(
     async (basis: Pick<BoxDraft, "name" | "audience" | "tone" | "contents"> & { items: { name: string }[] }) => {
@@ -129,5 +144,7 @@ export function useBoxEditor(boxId: string | null) {
     toggleArchived,
     uploadPhoto,
     isUploading,
+    uploadVideo,
+    isUploadingVideo,
   };
 }

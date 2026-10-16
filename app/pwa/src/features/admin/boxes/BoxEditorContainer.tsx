@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, type ChangeEvent, type FormEvent } from "react";
-import { Archive, ArrowLeft, ArchiveRestore, ExternalLink, ImageUp, Save, Sparkles, X } from "lucide-react";
+import { Archive, ArrowLeft, ArchiveRestore, Clapperboard, ExternalLink, ImageUp, Save, Sparkles, X } from "lucide-react";
 import { Badge, Button, Input, ProductImage, Select, TextArea } from "@/components/ui";
 import { BOX_ICON_NAMES, BoxIcon, type BoxItem } from "@/features/catalog";
 import { toneSurface } from "@/shared/types";
@@ -70,6 +70,8 @@ export function BoxEditorContainer({ boxId, startGenerating = false }: BoxEditor
           update={editor.update}
           onPhoto={editor.uploadPhoto}
           isUploading={editor.isUploading}
+          onVideo={editor.uploadVideo}
+          isUploadingVideo={editor.isUploadingVideo}
           sources={editor.sources}
           onDraw={editor.drawIllustration}
           isDrawing={editor.isDrawing}
@@ -86,17 +88,20 @@ interface FieldsProps {
   update: (patch: Partial<BoxDraft>) => void;
   onPhoto: (file: File) => void;
   isUploading: boolean;
+  onVideo: (file: File) => void;
+  isUploadingVideo: boolean;
   /** Pages the listing agent read for the current draft. */
   sources: ListingSource[];
   onDraw: () => void;
   isDrawing: boolean;
 }
 
-function BoxEditorFields({ draft, update, onPhoto, isUploading, sources, onDraw, isDrawing }: FieldsProps) {
+function BoxEditorFields({ draft, update, onPhoto, isUploading, onVideo, isUploadingVideo, sources, onDraw, isDrawing }: FieldsProps) {
   const fileInput = useRef<HTMLInputElement>(null);
-  const pickPhoto = (event: ChangeEvent<HTMLInputElement>) => {
+  const videoInput = useRef<HTMLInputElement>(null);
+  const pick = (upload: (file: File) => void) => (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) onPhoto(file);
+    if (file) upload(file);
     event.target.value = "";
   };
 
@@ -212,12 +217,29 @@ function BoxEditorFields({ draft, update, onPhoto, isUploading, sources, onDraw,
             )}
           </div>
         </AdminPanel>
+        <AdminPanel title="Video">
+          <p className={styles.note}>The box page’s one picture: a short, silent clip that plays on a loop. MP4, under 50 MB; 10–20 seconds works best.</p>
+          {draft.video && (
+            <video className={styles.videoPreview} src={draft.video} poster={draft.image ?? draft.illustration ?? undefined} muted loop playsInline controls preload="metadata" />
+          )}
+          <input ref={videoInput} type="file" accept="video/mp4,video/webm,video/quicktime" hidden onChange={pick(onVideo)} />
+          <div className={styles.photoActions}>
+            <Button size="sm" variant="secondary" iconLeft={Clapperboard} onClick={() => videoInput.current?.click()} loading={isUploadingVideo}>
+              {draft.video ? "Replace video" : "Upload video"}
+            </Button>
+            {draft.video && (
+              <Button size="sm" variant="ghost" iconLeft={X} onClick={() => update({ video: null })}>
+                Remove
+              </Button>
+            )}
+          </div>
+        </AdminPanel>
         <AdminPanel title="Photo">
-          <p className={styles.note}>A real photo, if you have one. It leads the gallery on the box page.</p>
+          <p className={styles.note}>A real photo, if you have one. The box page shows it until there’s a video, and the video uses it as its first frame.</p>
           <div className={styles.photo} style={{ background: toneSurface(draft.tone) }}>
             <ProductImage src={draft.image} tone={draft.tone} ratio="4 / 5" radius="var(--radius-md)" label={draft.shotDescription || draft.name} background="var(--cream-0)" sizes="320px" />
           </div>
-          <input ref={fileInput} type="file" accept="image/*" hidden onChange={pickPhoto} />
+          <input ref={fileInput} type="file" accept="image/*" hidden onChange={pick(onPhoto)} />
           <div className={styles.photoActions}>
             <Button size="sm" variant="secondary" iconLeft={ImageUp} onClick={() => fileInput.current?.click()} loading={isUploading}>
               {draft.image ? "Replace photo" : "Upload photo"}

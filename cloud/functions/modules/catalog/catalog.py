@@ -100,8 +100,10 @@ class Box(Document):
     shot_description: str = ""
     # The box tile and the page's hero: drawn by the admin's illustration agent, or the design's SVGs.
     illustration: str | None = None
-    # A real photo, uploaded by hand; the box page's gallery leads with it.
+    # A real photo, uploaded by hand; the box page shows it until there's a video.
     image: str | None = None
+    # A short, silent clip uploaded by hand; when set, it's what the box page shows.
+    video: str | None = None
     # Only the ways it's on sale have a price (see `options`).
     prices: dict[PurchaseOption, int]
     plan_notes: dict[PurchaseOption, str]

@@ -19,7 +19,7 @@ export const setBoxStatus = (boxId: string, status: BoxStatus) =>
   callFunction<{ boxId: string; status: BoxStatus }, { ok: boolean }>("admin_set_box_status", { boxId, status });
 
 /** A drafted listing: the form's fields with prices in pence, but no id, pictures or testimonial. */
-export type GeneratedListing = Omit<BoxPayload, "id" | "sortOrder" | "illustration">;
+export type GeneratedListing = Omit<BoxPayload, "id" | "sortOrder" | "illustration" | "video">;
 
 export interface ListingSource {
   title: string;
@@ -61,6 +61,18 @@ export const generateIllustration = (request: IllustrationRequest) =>
   callFunction<IllustrationRequest, { illustration: string }>("admin_generate_box_illustration", request, GENERATE_TIMEOUT_MS);
 
 const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
+// Keep in step with storage.rules.
+const MAX_VIDEO_BYTES = 50 * 1024 * 1024;
+
+/** Uploads a box video to Storage (admins only, per storage.rules) and returns its public URL. */
+export async function uploadBoxVideo(file: File): Promise<string> {
+  if (!file.type.startsWith("video/")) throw new Error("Choose a video file, e.g. an MP4.");
+  if (file.size > MAX_VIDEO_BYTES) throw new Error("Videos need to be under 50 MB. A short, compressed clip works best.");
+  const extension = file.name.split(".").pop()?.toLowerCase() || "mp4";
+  const clip = ref(cloudStorage(), `boxes/videos/${crypto.randomUUID()}.${extension}`);
+  await uploadBytes(clip, file, { contentType: file.type });
+  return getDownloadURL(clip);
+}
 
 /** Uploads a box photo to Storage (admins only, per storage.rules) and returns its public URL. */
 export async function uploadBoxPhoto(file: File): Promise<string> {
