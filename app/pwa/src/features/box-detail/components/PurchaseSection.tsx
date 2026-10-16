@@ -156,7 +156,7 @@ export function PurchasePanel({
           )}
         </div>
         <div className={styles.trust}>
-          <PartnerLogos center />
+          <PartnerLogos bare />
         </div>
       </div>
     </>
